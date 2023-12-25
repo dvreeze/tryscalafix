@@ -1,29 +1,30 @@
-
 val scalaVer = "2.13.12"
 val crossScalaVer = Seq(scalaVer)
 
-ThisBuild / description  := "Trying out Scalafix for helping understand large (Scala) code bases"
+ThisBuild / description := "Trying out Scalafix for helping understand large (Scala) code bases"
 ThisBuild / organization := "eu.cdevreeze.tryscalafix"
-ThisBuild / version      := "0.1.0-SNAPSHOT"
+ThisBuild / version := "0.1.0-SNAPSHOT"
 
 ThisBuild / versionScheme := Some("strict")
 
-ThisBuild / scalaVersion       := scalaVer
+ThisBuild / scalaVersion := scalaVer
 ThisBuild / crossScalaVersions := crossScalaVer
 
 ThisBuild / semanticdbEnabled := true // enable SemanticDB
 ThisBuild / semanticdbVersion := scalafixSemanticdb.revision // only required for Scala 2.x
 
-ThisBuild / scalacOptions ++= Seq("-Wconf:cat=unused-imports:w,cat=unchecked:w,cat=deprecation:w,cat=feature:w,cat=lint:w")
+ThisBuild / scalacOptions ++= Seq(
+  "-Wconf:cat=unused-imports:w,cat=unchecked:w,cat=deprecation:w,cat=feature:w,cat=lint:w"
+)
 
 ThisBuild / publishMavenStyle := true
 
 ThisBuild / publishTo := {
   val nexus = "https://oss.sonatype.org/"
   if (isSnapshot.value) {
-    Some("snapshots" at nexus + "content/repositories/snapshots")
+    Some("snapshots".at(nexus + "content/repositories/snapshots"))
   } else {
-    Some("releases" at nexus + "service/local/staging/deploy/maven2")
+    Some("releases".at(nexus + "service/local/staging/deploy/maven2"))
   }
 }
 
@@ -55,37 +56,37 @@ ThisBuild / libraryDependencies += "io.circe" %% "circe-core" % circeVersion
 ThisBuild / libraryDependencies += "io.circe" %% "circe-generic" % circeVersion
 ThisBuild / libraryDependencies += "io.circe" %% "circe-parser" % circeVersion
 
-
 ThisBuild / libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.17" % Test
 
-lazy val root = project.in(file("."))
+lazy val root = project
+  .in(file("."))
   .settings(
-    name                 := "tryscalafix",
-    publish              := {},
-    publishLocal         := {},
-    publishArtifact      := false,
-    Keys.`package`       := file(""))
+    name := "tryscalafix",
+    publish := {},
+    publishLocal := {},
+    publishArtifact := false,
+    Keys.`package` := file("")
+  )
 
 lazy val pomData =
   <url>https://github.com/dvreeze/try-scalafix</url>
-  <licenses>
-    <license>
-      <name>Apache License, Version 2.0</name>
-      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-      <distribution>repo</distribution>
-      <comments>Try-scalafix is licensed under Apache License, Version 2.0</comments>
-    </license>
-  </licenses>
-  <scm>
-    <connection>scm:git:git@github.com:dvreeze/try-scalafix.git</connection>
-    <url>https://github.com/dvreeze/try-scalafix.git</url>
-    <developerConnection>scm:git:git@github.com:dvreeze/try-scalafix.git</developerConnection>
-  </scm>
-  <developers>
-    <developer>
-      <id>dvreeze</id>
-      <name>Chris de Vreeze</name>
-      <email>chris.de.vreeze@caiway.net</email>
-    </developer>
-  </developers>
-
+    <licenses>
+      <license>
+        <name>Apache License, Version 2.0</name>
+        <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        <distribution>repo</distribution>
+        <comments>Try-scalafix is licensed under Apache License, Version 2.0</comments>
+      </license>
+    </licenses>
+    <scm>
+      <connection>scm:git:git@github.com:dvreeze/try-scalafix.git</connection>
+      <url>https://github.com/dvreeze/try-scalafix.git</url>
+      <developerConnection>scm:git:git@github.com:dvreeze/try-scalafix.git</developerConnection>
+    </scm>
+    <developers>
+      <developer>
+        <id>dvreeze</id>
+        <name>Chris de Vreeze</name>
+        <email>chris.de.vreeze@caiway.net</email>
+      </developer>
+    </developers>
