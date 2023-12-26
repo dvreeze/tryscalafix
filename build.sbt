@@ -56,6 +56,8 @@ ThisBuild / libraryDependencies += "io.circe" %% "circe-core" % circeVersion
 ThisBuild / libraryDependencies += "io.circe" %% "circe-generic" % circeVersion
 ThisBuild / libraryDependencies += "io.circe" %% "circe-parser" % circeVersion
 
+ThisBuild / libraryDependencies += "net.sf.saxon" % "Saxon-HE" % "12.4"
+
 ThisBuild / libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.17" % Test
 
 lazy val root = project
