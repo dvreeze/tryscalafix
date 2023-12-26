@@ -25,9 +25,9 @@ import io.circe.Json
  * @author
  *   Chris de Vreeze
  */
-trait SemanticDocumentAnalyserFactory[A <: SemanticDocumentAnalyser] {
+trait SemanticDocumentAnalyserFactory[R, F <: SemanticDocumentAnalyser[R]] {
 
-  def create(config: JsonConfig): A
+  def create(config: JsonConfig): F
 }
 
 object SemanticDocumentAnalyserFactory {

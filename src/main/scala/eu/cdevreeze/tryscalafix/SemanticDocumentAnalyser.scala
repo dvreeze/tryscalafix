@@ -20,12 +20,12 @@ import io.circe.Json
 import scalafix.v1.SemanticDocument
 
 /**
- * SemanticDocument analyser taking accumulated JSON as additional input and returning enhanced JSON that takes the work
- * done by this analyser on the input SemanticDocument into account.
+ * SemanticDocument analyser taking accumulated data (e.g. JSON) as additional input and returning enhanced data (in the
+ * same format) that takes the work done by this analyser on the input SemanticDocument into account.
  *
  * SemanticDocumentAnalyser instances can be nested.
  *
  * @author
  *   Chris de Vreeze
  */
-trait SemanticDocumentAnalyser extends Function2[SemanticDocument, Json, Json]
+trait SemanticDocumentAnalyser[R] extends Function2[SemanticDocument, R, R]
