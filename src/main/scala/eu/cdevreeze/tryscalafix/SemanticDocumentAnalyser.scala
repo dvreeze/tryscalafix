@@ -16,7 +16,6 @@
 
 package eu.cdevreeze.tryscalafix
 
-import io.circe.Json
 import scalafix.v1.SemanticDocument
 
 /**

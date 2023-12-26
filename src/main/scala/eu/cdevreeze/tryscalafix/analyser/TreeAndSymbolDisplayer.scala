@@ -58,7 +58,7 @@ final class TreeAndSymbolDisplayer() extends SemanticDocumentAnalyser[Elem] {
         val parentInfo: Seq[String] = {
           if (symbol.info.exists(_.signature.isInstanceOf[ClassSignature])) {
             val parentsOrSelf: Seq[Symbol] = getParentSymbolsOrSelf(symbol)
-            parentsOrSelf.map { sym => s"\tSuper-type (or self): $sym" }
+            parentsOrSelf.map { sym => s"Super-type (or self): $sym" }
           } else {
             Seq.empty
           }
