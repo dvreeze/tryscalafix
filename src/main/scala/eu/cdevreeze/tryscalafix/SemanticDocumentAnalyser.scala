@@ -19,8 +19,8 @@ package eu.cdevreeze.tryscalafix
 import scalafix.v1.SemanticDocument
 
 /**
- * SemanticDocument analyser, which is technically like a SemanticRule whose "apply" method returns another type (such
- * as JSON) than Scalafix Patch.
+ * SemanticDocument analyser, which is technically like a SemanticRule whose "apply" method returns another type than
+ * Scalafix Patch. Typically, the "apply" method returns JSON (e.g. from the circe library).
  *
  * SemanticDocumentAnalyser instances can be nested.
  *
