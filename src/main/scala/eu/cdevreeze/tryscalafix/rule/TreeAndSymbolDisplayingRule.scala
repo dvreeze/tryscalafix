@@ -79,7 +79,7 @@ final class TreeAndSymbolDisplayingRule() extends SemanticRule("TreeAndSymbolDis
     val analyser = new TreeAndSymbolDisplayer()
 
     val elem: Elem = analyser(doc)
-      .findFirstChildElem(_.name == new QName("sourceDocument"))
+      .findFirstDescendantElemOrSelf(_.name == new QName("sourceDocument"))
       .getOrElse(sys.error(s"Could not find 'sourceDocument' element"))
 
     accumulatedElem.getAndUpdate { e =>
