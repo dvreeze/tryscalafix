@@ -19,12 +19,12 @@ package eu.cdevreeze.tryscalafix
 import scalafix.v1.SemanticDocument
 
 /**
- * SemanticDocument analyser taking accumulated data (e.g. JSON) as additional input and returning enhanced data (in the
- * same format) that takes the work done by this analyser on the input SemanticDocument into account.
+ * SemanticDocument analyser, which is technically like a SemanticRule whose "apply" method returns another type (such
+ * as JSON) than Scalafix Patch.
  *
  * SemanticDocumentAnalyser instances can be nested.
  *
  * @author
  *   Chris de Vreeze
  */
-trait SemanticDocumentAnalyser[R] extends Function2[SemanticDocument, R, R]
+trait SemanticDocumentAnalyser[R] extends Function[SemanticDocument, R]

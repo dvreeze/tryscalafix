@@ -37,7 +37,7 @@ import scalafix.v1.SemanticDocument
  */
 final class ClassFinder() extends SemanticDocumentAnalyser[Json] {
 
-  override def apply(doc: SemanticDocument, accumulatedJson: Json): Json = {
+  override def apply(doc: SemanticDocument): Json = {
     ???
   }
 

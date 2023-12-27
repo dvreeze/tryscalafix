@@ -20,6 +20,7 @@ import eu.cdevreeze.tryscalafix.SemanticDocumentAnalyser
 import eu.cdevreeze.tryscalafix.internal.QuerySupport.WithQueryMethods
 import eu.cdevreeze.tryscalafix.internal.SymbolQuerySupport.getParentSymbolsOrSelf
 import eu.cdevreeze.tryscalafix.internal.XmlSupport.Elem
+import eu.cdevreeze.tryscalafix.internal.XmlSupport.Scope
 import eu.cdevreeze.tryscalafix.internal.XmlSupport.Text
 import scalafix.XtensionScalafixProductInspect
 import scalafix.v1._
@@ -39,7 +40,7 @@ import scala.util.chaining.scalaUtilChainingOps
  */
 final class TreeAndSymbolDisplayer() extends SemanticDocumentAnalyser[Elem] {
 
-  override def apply(doc: SemanticDocument, accumulatedElem: Elem): Elem = {
+  override def apply(doc: SemanticDocument): Elem = {
     implicit val implicitDoc: SemanticDocument = doc
 
     val fileName: Path = doc.input.asInstanceOf[Input.VirtualFile].path.pipe(Paths.get(_)).getFileName
@@ -66,7 +67,7 @@ final class TreeAndSymbolDisplayer() extends SemanticDocumentAnalyser[Elem] {
         parentInfo.prepended(symInfo)
       }
 
-    val parentScope = accumulatedElem.scope
+    val parentScope = Scope(Map.empty)
     val newElem: Elem =
       Elem(
         new QName("sourceDocument"),
@@ -84,9 +85,7 @@ final class TreeAndSymbolDisplayer() extends SemanticDocumentAnalyser[Elem] {
         )
       )
 
-    accumulatedElem.pipe { e =>
-      e.copy(children = e.children.appended(newElem))
-    }
+    newElem
   }
 
 }
