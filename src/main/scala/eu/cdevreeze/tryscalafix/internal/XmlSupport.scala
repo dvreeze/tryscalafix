@@ -166,7 +166,7 @@ object XmlSupport {
 
     def convertDocumentElem(docElem: Elem): Unit = {
       handler.startDocument()
-      docElem.children.foreach(ch => convertNode(ch, Scope(Map.empty)))
+      convertElem(docElem, Scope(Map.empty))
       handler.endDocument()
     }
 

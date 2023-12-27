@@ -27,6 +27,7 @@ import scalafix.v1.SemanticRule
 
 import java.util.concurrent.atomic.AtomicReference
 import javax.xml.namespace.QName
+import javax.xml.transform.OutputKeys
 import javax.xml.transform.TransformerFactory
 import javax.xml.transform.sax.SAXTransformerFactory
 import javax.xml.transform.stream.StreamResult
@@ -66,6 +67,7 @@ final class TreeAndSymbolDisplayingRule() extends SemanticRule("TreeAndSymbolDis
     val tf = TransformerFactory.newInstance().asInstanceOf[SAXTransformerFactory]
     val handler: ContentHandler = tf
       .newTransformerHandler()
+      .tap(_.getTransformer().setOutputProperty(OutputKeys.INDENT, "yes"))
       .tap(_.setResult(new StreamResult(System.out)))
     val converterToSax = new ConverterToSax(handler)
     converterToSax.convertDocumentElem(accumulatedElem.get())

@@ -80,7 +80,9 @@ final class TreeAndSymbolDisplayer() extends SemanticDocumentAnalyser[Elem] {
             new QName("symbols"),
             Map.empty,
             parentScope,
-            symbolInfo.map(si => Text(si, true))
+            symbolInfo.map { si =>
+              Elem(new QName("symbol"), Map.empty, parentScope, Seq(Text(si, true)))
+            }
           )
         )
       )
