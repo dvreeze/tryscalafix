@@ -63,11 +63,7 @@ ThisBuild / libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.17" % T
 lazy val root = project
   .in(file("."))
   .settings(
-    name := "tryscalafix",
-    publish := {},
-    publishLocal := {},
-    publishArtifact := false,
-    Keys.`package` := file("")
+    name := "tryscalafix"
   )
 
 lazy val pomData =
