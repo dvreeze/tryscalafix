@@ -39,7 +39,7 @@ import scala.util.chaining.scalaUtilChainingOps
  * @author
  *   Chris de Vreeze
  */
-final class TreeAndSymbolDisplayingRule() extends SemanticRule("TreeAndSymbolDisplayer") {
+final class TreeAndSymbolDisplayingRule() extends SemanticRule("TreeAndSymbolDisplayingRule") {
 
   private final val accumulatedElem = new AtomicReference(
     Elem(
