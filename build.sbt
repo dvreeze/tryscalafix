@@ -67,7 +67,7 @@ lazy val root = project
   )
 
 lazy val pomData =
-  <url>https://github.com/dvreeze/try-scalafix</url>
+  <url>https://github.com/dvreeze/tryscalafix</url>
     <licenses>
       <license>
         <name>Apache License, Version 2.0</name>
@@ -77,9 +77,9 @@ lazy val pomData =
       </license>
     </licenses>
     <scm>
-      <connection>scm:git:git@github.com:dvreeze/try-scalafix.git</connection>
-      <url>https://github.com/dvreeze/try-scalafix.git</url>
-      <developerConnection>scm:git:git@github.com:dvreeze/try-scalafix.git</developerConnection>
+      <connection>scm:git:git@github.com:dvreeze/tryscalafix.git</connection>
+      <url>https://github.com/dvreeze/tryscalafix.git</url>
+      <developerConnection>scm:git:git@github.com:dvreeze/tryscalafix.git</developerConnection>
     </scm>
     <developers>
       <developer>
