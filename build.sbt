@@ -3,7 +3,7 @@ val crossScalaVer = Seq(scalaVer)
 
 ThisBuild / description := "Trying out Scalafix for helping understand large (Scala) code bases"
 ThisBuild / organization := "eu.cdevreeze.tryscalafix"
-ThisBuild / version := "0.1.0-SNAPSHOT"
+ThisBuild / version := "0.1.0"
 
 ThisBuild / versionScheme := Some("strict")
 
@@ -20,13 +20,15 @@ ThisBuild / scalacOptions ++= Seq(
 ThisBuild / publishMavenStyle := true
 
 ThisBuild / publishTo := {
-  val nexus = "https://oss.sonatype.org/"
+  val nexus = "https://s01.oss.sonatype.org/"
   if (isSnapshot.value) {
     Some("snapshots".at(nexus + "content/repositories/snapshots"))
   } else {
     Some("releases".at(nexus + "service/local/staging/deploy/maven2"))
   }
 }
+
+// TODO versionScheme, such as early-semver
 
 ThisBuild / pomExtra := pomData
 ThisBuild / pomIncludeRepository := { _ => false }
