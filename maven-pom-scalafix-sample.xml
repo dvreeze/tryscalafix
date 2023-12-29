@@ -1,0 +1,61 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>ignore-this-artifact-id</artifactId>
+
+    <!-- See https://github.com/evis/scalafix-maven-plugin -->
+    <!-- Below there is an example of how to use rules occurring in this project in a Maven Scala project -->
+    <!-- Use the Maven profile "semanticdb" to have the compiler emit semanticdb files (besides class files) -->
+    <!-- Do not forget to add a .scalafix.conf file to the root of the Maven Scala project -->
+    <!-- It should contain one or more rules from this tryscalafix project -->
+    <!-- Running the rule(s): "mvn scalafix:scalafix -Psemanticdb" -->
+
+    <!-- I have only seen this work so far for Scala 2.13 Maven projects -->
+    <!-- Do not forget to set properties like "semanticdb.version" in the POM file -->
+
+    <profiles>
+        <profile>
+            <id>semanticdb</id>
+            <build>
+                <pluginManagement>
+                    <plugins>
+                        <plugin>
+                            <groupId>net.alchim31.maven</groupId>
+                            <artifactId>scala-maven-plugin_${scala.binary.version}</artifactId>
+                            <configuration>
+                                <compilerPlugins>
+                                    <compilerPlugin>
+                                        <groupId>org.scalameta</groupId>
+                                        <artifactId>semanticdb-scalac_${scala.binary.version}</artifactId>
+                                        <version>${semanticdb.version}</version>
+                                    </compilerPlugin>
+                                </compilerPlugins>
+                            </configuration>
+                        </plugin>
+                    </plugins>
+                </pluginManagement>
+                <plugins>
+                    <plugin>
+                        <groupId>io.github.evis</groupId>
+                        <artifactId>scalafix-maven-plugin_2.13</artifactId>
+                        <version>0.1.8_0.11.0</version>
+                        <configuration>
+                            <mode>STDOUT</mode>
+                            <skipTest>true</skipTest>
+                        </configuration>
+                        <dependencies>
+                            <!-- Adapt version -->
+                            <dependency>
+                                <groupId>eu.cdevreeze.tryscalafix</groupId>
+                                <artifactId>tryscalafix_2.13</artifactId>
+                                <version>0.1.0</version>
+                            </dependency>
+                        </dependencies>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>
