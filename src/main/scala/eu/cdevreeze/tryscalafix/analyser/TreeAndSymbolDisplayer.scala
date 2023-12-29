@@ -67,7 +67,7 @@ final class TreeAndSymbolDisplayer() extends SemanticDocumentAnalyser[Elem] {
         parentInfo.prepended(symInfo)
       }
 
-    val parentScope = Scope(Map.empty)
+    val parentScope = Scope.empty
     val newElem: Elem =
       Elem(
         new QName("sourceDocument"),

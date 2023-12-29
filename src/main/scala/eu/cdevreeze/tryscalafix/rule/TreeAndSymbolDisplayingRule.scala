@@ -17,6 +17,7 @@
 package eu.cdevreeze.tryscalafix.rule
 
 import eu.cdevreeze.tryscalafix.analyser.TreeAndSymbolDisplayer
+import eu.cdevreeze.tryscalafix.internal.XmlSupport
 import eu.cdevreeze.tryscalafix.internal.XmlSupport.ConverterToSax
 import eu.cdevreeze.tryscalafix.internal.XmlSupport.Elem
 import eu.cdevreeze.tryscalafix.internal.XmlSupport.Scope
@@ -45,7 +46,7 @@ final class TreeAndSymbolDisplayingRule() extends SemanticRule("TreeAndSymbolDis
     Elem(
       name = new QName("DummyRoot"),
       attributes = Map.empty,
-      scope = Scope(Map.empty),
+      scope = Scope.empty,
       children = Seq.empty
     )
   )
@@ -57,20 +58,17 @@ final class TreeAndSymbolDisplayingRule() extends SemanticRule("TreeAndSymbolDis
       Elem(
         name = new QName("TreeAndSymbolDisplayer"),
         attributes = Map.empty,
-        scope = Scope(Map.empty),
+        scope = Scope.empty,
         children = Seq.empty
       )
     }
   }
 
   override def afterComplete(): Unit = {
-    val tf = TransformerFactory.newInstance().asInstanceOf[SAXTransformerFactory]
-    val handler: ContentHandler = tf
-      .newTransformerHandler()
-      .tap(_.getTransformer().setOutputProperty(OutputKeys.INDENT, "yes"))
-      .tap(_.setResult(new StreamResult(System.out)))
-    val converterToSax = new ConverterToSax(handler)
-    converterToSax.convertDocumentElem(accumulatedElem.get())
+    // When using method newDefaultInstance, CDATA is emitted when the text node says so
+    implicit val tf: SAXTransformerFactory =
+      TransformerFactory.newDefaultInstance().asInstanceOf[SAXTransformerFactory]
+    XmlSupport.print(accumulatedElem.get(), new StreamResult(System.out))
 
     super.afterComplete()
   }

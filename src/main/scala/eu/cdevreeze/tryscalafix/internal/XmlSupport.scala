@@ -23,6 +23,9 @@ import org.xml.sax.helpers.AttributesImpl
 
 import javax.xml.XMLConstants
 import javax.xml.namespace.QName
+import javax.xml.transform.OutputKeys
+import javax.xml.transform.Result
+import javax.xml.transform.sax.SAXTransformerFactory
 import scala.util.chaining.scalaUtilChainingOps
 
 /**
@@ -56,7 +59,7 @@ object XmlSupport {
         Declarations(Map.empty)
       } else {
         val newlyDeclared: Map[String, String] = scope.prefixNamespaceMapping.filter { case (pref, ns) =>
-          assert(ns.length > 0)
+          assert(ns.nonEmpty)
           Scope.this.prefixNamespaceMapping.getOrElse(pref, "") != ns
         }
 
@@ -71,6 +74,10 @@ object XmlSupport {
       }
     }
 
+  }
+
+  object Scope {
+    val empty: Scope = Scope(Map.empty)
   }
 
   /**
@@ -166,7 +173,7 @@ object XmlSupport {
 
     def convertDocumentElem(docElem: Elem): Unit = {
       handler.startDocument()
-      convertElem(docElem, Scope(Map.empty))
+      convertElem(docElem, Scope.empty)
       handler.endDocument()
     }
 
@@ -254,6 +261,15 @@ object XmlSupport {
       }
     }
 
+  }
+
+  def print(elem: Elem, result: Result)(implicit tf: SAXTransformerFactory): Unit = {
+    val handler: ContentHandler = tf
+      .newTransformerHandler()
+      .tap(_.getTransformer.setOutputProperty(OutputKeys.INDENT, "yes"))
+      .tap(_.setResult(result))
+    val converterToSax = new ConverterToSax(handler)
+    converterToSax.convertDocumentElem(elem)
   }
 
 }
