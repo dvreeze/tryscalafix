@@ -17,10 +17,9 @@
 package eu.cdevreeze.tryscalafix.rule
 
 import eu.cdevreeze.tryscalafix.analyser.TreeAndSymbolDisplayer
-import eu.cdevreeze.tryscalafix.internal.XmlSupport
-import eu.cdevreeze.tryscalafix.internal.XmlSupport.ConverterToSax
-import eu.cdevreeze.tryscalafix.internal.XmlSupport.Elem
-import eu.cdevreeze.tryscalafix.internal.XmlSupport.Scope
+import eu.cdevreeze.tryscalafix.internal.xmlsupport.Elem
+import eu.cdevreeze.tryscalafix.internal.xmlsupport.Scope
+import eu.cdevreeze.tryscalafix.internal.xmlsupport.XmlPrinter
 import org.xml.sax.ContentHandler
 import scalafix.patch.Patch
 import scalafix.v1.SemanticDocument
@@ -68,7 +67,7 @@ final class TreeAndSymbolDisplayingRule() extends SemanticRule("TreeAndSymbolDis
     // When using method newDefaultInstance, CDATA is emitted when the text node says so
     implicit val tf: SAXTransformerFactory =
       TransformerFactory.newDefaultInstance().asInstanceOf[SAXTransformerFactory]
-    XmlSupport.print(accumulatedElem.get(), new StreamResult(System.out))
+    XmlPrinter(tf).print(accumulatedElem.get(), new StreamResult(System.out))
 
     super.afterComplete()
   }

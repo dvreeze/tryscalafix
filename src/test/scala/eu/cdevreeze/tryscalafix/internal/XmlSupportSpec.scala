@@ -1,8 +1,9 @@
 package eu.cdevreeze.tryscalafix.internal
 
-import eu.cdevreeze.tryscalafix.internal.XmlSupport.Elem
-import eu.cdevreeze.tryscalafix.internal.XmlSupport.Scope
-import eu.cdevreeze.tryscalafix.internal.XmlSupport.Text
+import eu.cdevreeze.tryscalafix.internal.xmlsupport.Elem
+import eu.cdevreeze.tryscalafix.internal.xmlsupport.Scope
+import eu.cdevreeze.tryscalafix.internal.xmlsupport.Text
+import eu.cdevreeze.tryscalafix.internal.xmlsupport.XmlPrinter
 import org.scalatest.flatspec.AnyFlatSpec
 
 import java.io.ByteArrayOutputStream
@@ -96,7 +97,7 @@ class XmlSupportSpec extends AnyFlatSpec {
     // When using method newDefaultInstance, CDATA is emitted when the text node says so
     implicit val tf: SAXTransformerFactory =
       TransformerFactory.newDefaultInstance().asInstanceOf[SAXTransformerFactory]
-    XmlSupport.print(elem1, result)
+    XmlPrinter(tf).print(elem1, result)
     val xmlString = bos.toString(StandardCharsets.UTF_8)
 
     println(xmlString)

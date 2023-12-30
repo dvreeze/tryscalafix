@@ -19,9 +19,9 @@ package eu.cdevreeze.tryscalafix.analyser
 import eu.cdevreeze.tryscalafix.SemanticDocumentAnalyser
 import eu.cdevreeze.tryscalafix.internal.QuerySupport.WithQueryMethods
 import eu.cdevreeze.tryscalafix.internal.SymbolQuerySupport.getParentSymbolsOrSelf
-import eu.cdevreeze.tryscalafix.internal.XmlSupport.Elem
-import eu.cdevreeze.tryscalafix.internal.XmlSupport.Scope
-import eu.cdevreeze.tryscalafix.internal.XmlSupport.Text
+import eu.cdevreeze.tryscalafix.internal.xmlsupport.Elem
+import eu.cdevreeze.tryscalafix.internal.xmlsupport.Scope
+import eu.cdevreeze.tryscalafix.internal.xmlsupport.Text
 import scalafix.XtensionScalafixProductInspect
 import scalafix.v1._
 
