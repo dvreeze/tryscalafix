@@ -108,3 +108,28 @@ final case class Elem(
   }
 
 }
+
+object Node {
+
+  def text(t: String): Text = Text(t, isCData = false)
+
+  def cdataText(t: String): Text = Text(t, isCData = true)
+
+  def elem(name: QName, attrs: Map[QName, String], children: Seq[Node])(implicit parentScope: Scope): Elem =
+    Elem(
+      name = name,
+      attributes = attrs,
+      scope = parentScope,
+      children = children
+    )
+
+  def elem(name: QName, children: Seq[Node])(implicit parentScope: Scope): Elem =
+    elem(name, Map.empty, children)(parentScope)
+
+  def textElem(name: QName, attrs: Map[QName, String], text: Text)(implicit parentScope: Scope): Elem =
+    elem(name, attrs, Seq(text))(parentScope)
+
+  def textElem(name: QName, text: Text)(implicit parentScope: Scope): Elem =
+    textElem(name, Map.empty, text)(parentScope)
+
+}

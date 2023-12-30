@@ -1,6 +1,10 @@
 package eu.cdevreeze.tryscalafix.internal
 
 import eu.cdevreeze.tryscalafix.internal.xmlsupport.Elem
+import eu.cdevreeze.tryscalafix.internal.xmlsupport.Node.cdataText
+import eu.cdevreeze.tryscalafix.internal.xmlsupport.Node.elem
+import eu.cdevreeze.tryscalafix.internal.xmlsupport.Node.text
+import eu.cdevreeze.tryscalafix.internal.xmlsupport.Node.textElem
 import eu.cdevreeze.tryscalafix.internal.xmlsupport.Scope
 import eu.cdevreeze.tryscalafix.internal.xmlsupport.Text
 import eu.cdevreeze.tryscalafix.internal.xmlsupport.XmlPrinter
@@ -15,42 +19,32 @@ import javax.xml.transform.stream.StreamResult
 
 class XmlSupportSpec extends AnyFlatSpec {
 
+  private implicit val elem1Scope: Scope = Scope.empty
+
   private val elem1: Elem =
-    Elem(
+    elem(
       name = new QName("root"),
-      attributes = Map.empty,
-      scope = Scope.empty,
       children = Seq(
-        Elem(
+        textElem(
           name = new QName("child"),
-          attributes = Map.empty,
-          scope = Scope.empty,
-          children = Seq(Text("child 1", isCData = false))
+          text = text("child 1")
         ),
-        Elem(
+        textElem(
           name = new QName("child"),
-          attributes = Map.empty,
-          scope = Scope.empty,
-          children = Seq(Text("child 2", isCData = false))
+          text = text("child 2")
         ),
-        Elem(
+        elem(
           name = new QName("child"),
-          attributes = Map.empty,
-          scope = Scope.empty,
           children = Seq(
-            Elem(
+            textElem(
               name = new QName("grandchild"),
-              attributes = Map.empty,
-              scope = Scope.empty,
-              children = Seq(Text("grandchild", isCData = false))
+              text = text("grandchild")
             )
           )
         ),
-        Elem(
+        textElem(
           name = new QName("child"),
-          attributes = Map.empty,
-          scope = Scope.empty,
-          children = Seq(Text("child 4", isCData = true))
+          text = cdataText("child 4")
         )
       )
     )

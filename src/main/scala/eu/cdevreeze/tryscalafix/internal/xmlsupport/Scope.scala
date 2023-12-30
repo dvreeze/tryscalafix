@@ -42,6 +42,14 @@ final case class Scope(prefixNamespaceMapping: Map[String, String]) {
     }
   }
 
+  def resolve(otherScope: Scope): Scope = {
+    val prefixes: Seq[String] = this.prefixNamespaceMapping.keySet.union(otherScope.prefixNamespaceMapping.keySet).toSeq
+    val newMapping: Map[String, String] = prefixes.map { pref =>
+      pref -> otherScope.prefixNamespaceMapping.getOrElse(pref, this.prefixNamespaceMapping(pref))
+    }.toMap
+    Scope(newMapping)
+  }
+
   def relativize(scope: Scope): Declarations = {
     if (Scope.this == scope) {
       Declarations(Map.empty)

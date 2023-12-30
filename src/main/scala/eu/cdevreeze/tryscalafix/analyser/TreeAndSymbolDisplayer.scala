@@ -20,8 +20,8 @@ import eu.cdevreeze.tryscalafix.SemanticDocumentAnalyser
 import eu.cdevreeze.tryscalafix.internal.QuerySupport.WithQueryMethods
 import eu.cdevreeze.tryscalafix.internal.SymbolQuerySupport.getParentSymbolsOrSelf
 import eu.cdevreeze.tryscalafix.internal.xmlsupport.Elem
+import eu.cdevreeze.tryscalafix.internal.xmlsupport.Node
 import eu.cdevreeze.tryscalafix.internal.xmlsupport.Scope
-import eu.cdevreeze.tryscalafix.internal.xmlsupport.Text
 import scalafix.XtensionScalafixProductInspect
 import scalafix.v1._
 
@@ -67,21 +67,17 @@ final class TreeAndSymbolDisplayer() extends SemanticDocumentAnalyser[Elem] {
         parentInfo.prepended(symInfo)
       }
 
-    val parentScope = Scope.empty
+    implicit val parentScope: Scope = Scope.empty
     val newElem: Elem =
-      Elem(
+      Node.elem(
         new QName("sourceDocument"),
-        Map.empty,
-        parentScope,
         Seq(
-          Elem(new QName("file"), Map.empty, parentScope, Seq(Text(fileName.toString, false))),
-          Elem(new QName("treeStructure"), Map.empty, parentScope, Seq(Text(treeStructure, true))),
-          Elem(
+          Node.textElem(new QName("file"), Node.text(fileName.toString)),
+          Node.textElem(new QName("treeStructure"), Node.cdataText(treeStructure)),
+          Node.elem(
             new QName("symbols"),
-            Map.empty,
-            parentScope,
             symbolInfo.map { si =>
-              Elem(new QName("symbol"), Map.empty, parentScope, Seq(Text(si, true)))
+              Node.textElem(new QName("symbol"), Node.cdataText(si))
             }
           )
         )

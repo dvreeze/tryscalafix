@@ -18,20 +18,18 @@ package eu.cdevreeze.tryscalafix.rule
 
 import eu.cdevreeze.tryscalafix.analyser.TreeAndSymbolDisplayer
 import eu.cdevreeze.tryscalafix.internal.xmlsupport.Elem
+import eu.cdevreeze.tryscalafix.internal.xmlsupport.Node
 import eu.cdevreeze.tryscalafix.internal.xmlsupport.Scope
 import eu.cdevreeze.tryscalafix.internal.xmlsupport.XmlPrinter
-import org.xml.sax.ContentHandler
 import scalafix.patch.Patch
 import scalafix.v1.SemanticDocument
 import scalafix.v1.SemanticRule
 
 import java.util.concurrent.atomic.AtomicReference
 import javax.xml.namespace.QName
-import javax.xml.transform.OutputKeys
 import javax.xml.transform.TransformerFactory
 import javax.xml.transform.sax.SAXTransformerFactory
 import javax.xml.transform.stream.StreamResult
-import scala.util.chaining.scalaUtilChainingOps
 
 /**
  * SemanticRule that shows Scalameta trees and symbols, by invoking TreeAndSymbolDisplayer.
@@ -41,11 +39,11 @@ import scala.util.chaining.scalaUtilChainingOps
  */
 final class TreeAndSymbolDisplayingRule() extends SemanticRule("TreeAndSymbolDisplayingRule") {
 
+  private implicit val parentScope: Scope = Scope.empty
+
   private final val accumulatedElem = new AtomicReference(
-    Elem(
+    Node.elem(
       name = new QName("DummyRoot"),
-      attributes = Map.empty,
-      scope = Scope.empty,
       children = Seq.empty
     )
   )
@@ -54,10 +52,8 @@ final class TreeAndSymbolDisplayingRule() extends SemanticRule("TreeAndSymbolDis
     super.beforeStart()
 
     this.accumulatedElem.set {
-      Elem(
+      Node.elem(
         name = new QName("TreeAndSymbolDisplayer"),
-        attributes = Map.empty,
-        scope = Scope.empty,
         children = Seq.empty
       )
     }
