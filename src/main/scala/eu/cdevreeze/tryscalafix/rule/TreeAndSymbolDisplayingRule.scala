@@ -27,8 +27,6 @@ import scalafix.v1.SemanticRule
 
 import java.util.concurrent.atomic.AtomicReference
 import javax.xml.namespace.QName
-import javax.xml.transform.TransformerFactory
-import javax.xml.transform.sax.SAXTransformerFactory
 import javax.xml.transform.stream.StreamResult
 
 /**
@@ -60,10 +58,7 @@ final class TreeAndSymbolDisplayingRule() extends SemanticRule("TreeAndSymbolDis
   }
 
   override def afterComplete(): Unit = {
-    // When using method newDefaultInstance, CDATA is emitted when the text node says so
-    implicit val tf: SAXTransformerFactory =
-      TransformerFactory.newDefaultInstance().asInstanceOf[SAXTransformerFactory]
-    XmlPrinter(tf).print(accumulatedElem.get(), new StreamResult(System.out))
+    XmlPrinter.newDefaultInstance().print(accumulatedElem.get(), new StreamResult(System.out))
 
     super.afterComplete()
   }

@@ -13,8 +13,6 @@ import org.scalatest.flatspec.AnyFlatSpec
 
 import java.io.ByteArrayOutputStream
 import java.nio.charset.StandardCharsets
-import javax.xml.transform.TransformerFactory
-import javax.xml.transform.sax.SAXTransformerFactory
 import javax.xml.transform.stream.StreamResult
 
 class XmlSupportSpec extends AnyFlatSpec {
@@ -88,10 +86,7 @@ class XmlSupportSpec extends AnyFlatSpec {
   it should "serialize XML correctly" in {
     val bos = new ByteArrayOutputStream()
     val result = new StreamResult(bos)
-    // When using method newDefaultInstance, CDATA is emitted when the text node says so
-    implicit val tf: SAXTransformerFactory =
-      TransformerFactory.newDefaultInstance().asInstanceOf[SAXTransformerFactory]
-    XmlPrinter(tf).print(elem1, result)
+    XmlPrinter.newDefaultInstance().print(elem1, result)
     val xmlString = bos.toString(StandardCharsets.UTF_8)
 
     println(xmlString)

@@ -51,6 +51,7 @@ final case class Elem(
     }
   }
 
+  // Query API
   // Child axis
 
   def filterChildElems(p: Elem => Boolean): Seq[Elem] = {
@@ -107,9 +108,49 @@ final case class Elem(
     findAllChildElems().flatMap(_.findTopmostElemsOrSelf(p))
   }
 
+  // Unsafe functional update API.
+
+  /**
+   * Returns an unsafe functional update API for this element node. It is unsafe in that it does not protect against any
+   * issues with changed Scopes. For example, suddenly introducing a default namespace may affect element names, in
+   * particular their namespaces. As another example, Scope changes may require namespace undeclarations from parent to
+   * child element, which in XML 1.0 is illegal for non-default namespaces.
+   */
+  def unsafeUpdateApi: Node.UnsafeElemUpdateApi = Node.UnsafeElemUpdateApi(this)
 }
 
 object Node {
+
+  final case class UnsafeElemUpdateApi(elm: Elem) {
+
+    def plusChild(addedChild: Node): Elem = plusChildren(Seq(addedChild))
+
+    def plusChildren(addedChildren: Seq[Node]): Elem = {
+      withChildren(elm.children.appendedAll(addedChildren))
+    }
+
+    /**
+     * Replaces all children by the passed collection of children.
+     */
+    def withChildren(newChildren: Seq[Node]): Elem = {
+      elm.copy(children = newChildren)
+    }
+
+    def plusAttribute(attrName: QName, attrValue: String): Elem =
+      plusAttributes(Map(attrName -> attrValue))
+
+    def plusAttributes(addedAttributes: Map[QName, String]): Elem = {
+      withAttributes(elm.attributes.concat(addedAttributes))
+    }
+
+    /**
+     * Replaces all attributes by the passed collection of attributes.
+     */
+    def withAttributes(newAttributes: Map[QName, String]): Elem = {
+      elm.copy(attributes = newAttributes)
+    }
+
+  }
 
   def elemName(prefix: String, localName: String)(implicit scope: Scope): QName = {
     val nsOption: Option[String] = scope.resolve(prefix)

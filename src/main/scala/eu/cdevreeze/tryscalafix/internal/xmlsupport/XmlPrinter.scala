@@ -20,6 +20,7 @@ import org.xml.sax.ContentHandler
 
 import javax.xml.transform.OutputKeys
 import javax.xml.transform.Result
+import javax.xml.transform.TransformerFactory
 import javax.xml.transform.sax.SAXTransformerFactory
 import scala.util.chaining.scalaUtilChainingOps
 
@@ -45,4 +46,10 @@ final class XmlPrinter(val tf: SAXTransformerFactory) {
 object XmlPrinter {
 
   def apply(tf: SAXTransformerFactory): XmlPrinter = new XmlPrinter(tf)
+
+  def newDefaultInstance(): XmlPrinter = apply {
+    // When using method newDefaultInstance, CDATA is emitted when the text node says so
+    TransformerFactory.newDefaultInstance().asInstanceOf[SAXTransformerFactory]
+  }
+
 }
