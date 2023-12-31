@@ -18,6 +18,7 @@ package eu.cdevreeze.tryscalafix.internal.xmlsupport
 
 import javax.xml.XMLConstants
 import javax.xml.namespace.QName
+import scala.util.chaining.scalaUtilChainingOps
 
 /**
  * XML tree node, in particular element node or text node.
@@ -115,6 +116,9 @@ final case class Elem(
    * issues with changed Scopes. For example, suddenly introducing a default namespace may affect element names, in
    * particular their namespaces. As another example, Scope changes may require namespace undeclarations from parent to
    * child element, which in XML 1.0 is illegal for non-default namespaces.
+   *
+   * Obviously it is safest to create and functionally update an element tree using one and the same implicit parent
+   * Scope.
    */
   def unsafeUpdateApi: Node.UnsafeElemUpdateApi = Node.UnsafeElemUpdateApi(this)
 }
@@ -148,6 +152,23 @@ object Node {
      */
     def withAttributes(newAttributes: Map[QName, String]): Elem = {
       elm.copy(attributes = newAttributes)
+    }
+
+    def transformChildElems(f: Elem => Elem): Elem = withChildren {
+      elm.children.map {
+        case che: Elem => f(che)
+        case n         => n
+      }
+    }
+
+    def transformDescendantElemsOrSelf(f: Elem => Elem): Elem = {
+      // Recursive
+      transformChildElems(_.unsafeUpdateApi.transformDescendantElemsOrSelf(f))
+        .pipe(f)
+    }
+
+    def transformDescendantElems(f: Elem => Elem): Elem = {
+      transformChildElems(_.unsafeUpdateApi.transformDescendantElemsOrSelf(f))
     }
 
   }
