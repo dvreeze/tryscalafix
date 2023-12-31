@@ -111,6 +111,31 @@ final case class Elem(
 
 object Node {
 
+  def elemName(prefix: String, localName: String)(implicit scope: Scope): QName = {
+    val nsOption: Option[String] = scope.resolve(prefix)
+    nsOption
+      .map(ns => new QName(ns, localName, prefix))
+      .getOrElse {
+        if (prefix == XMLConstants.DEFAULT_NS_PREFIX) {
+          new QName(localName)
+        } else {
+          sys.error(s"Could not resolve name with prefix '$prefix' and local name '$localName'")
+        }
+      }
+  }
+
+  def elemName(localName: String)(implicit scope: Scope): QName = {
+    elemName(XMLConstants.DEFAULT_NS_PREFIX, localName)(scope)
+  }
+
+  def attrName(prefix: String, localName: String)(implicit scope: Scope): QName = {
+    elemName(prefix, localName)(scope.withoutDefaultNamespace)
+  }
+
+  def attrName(localName: String)(implicit scope: Scope): QName = {
+    attrName(XMLConstants.DEFAULT_NS_PREFIX, localName)(scope)
+  }
+
   def text(t: String): Text = Text(t, isCData = false)
 
   def cdataText(t: String): Text = Text(t, isCData = true)

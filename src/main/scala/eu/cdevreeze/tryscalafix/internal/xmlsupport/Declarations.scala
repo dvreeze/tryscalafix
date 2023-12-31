@@ -16,6 +16,8 @@
 
 package eu.cdevreeze.tryscalafix.internal.xmlsupport
 
+import javax.xml.XMLConstants
+
 /**
  * Namespace declarations (or undeclarations). For namespace undeclarations, the mapped value is the empty string. Note
  * that XML 1.0 only allows undeclarations for the default namespace.
@@ -23,4 +25,6 @@ package eu.cdevreeze.tryscalafix.internal.xmlsupport
  * @author
  *   Chris de Vreeze
  */
-final case class Declarations(prefixNamespaceMapping: Map[String, String])
+final case class Declarations(prefixNamespaceMapping: Map[String, String]) {
+  require(!prefixNamespaceMapping.contains(XMLConstants.XML_NS_PREFIX))
+}

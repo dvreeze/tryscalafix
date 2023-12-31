@@ -43,7 +43,7 @@ final class TreeAndSymbolDisplayingRule() extends SemanticRule("TreeAndSymbolDis
 
   private final val accumulatedElem = new AtomicReference(
     Node.elem(
-      name = new QName("DummyRoot"),
+      name = Node.elemName("DummyRoot"),
       children = Seq.empty
     )
   )
@@ -53,7 +53,7 @@ final class TreeAndSymbolDisplayingRule() extends SemanticRule("TreeAndSymbolDis
 
     this.accumulatedElem.set {
       Node.elem(
-        name = new QName("TreeAndSymbolDisplayer"),
+        name = Node.elemName("TreeAndSymbolDisplayer"),
         children = Seq.empty
       )
     }

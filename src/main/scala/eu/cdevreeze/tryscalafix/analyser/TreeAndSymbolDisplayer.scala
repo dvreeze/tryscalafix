@@ -27,7 +27,6 @@ import scalafix.v1._
 
 import java.nio.file.Path
 import java.nio.file.Paths
-import javax.xml.namespace.QName
 import scala.meta.Tree
 import scala.meta.inputs.Input
 import scala.util.chaining.scalaUtilChainingOps
@@ -70,14 +69,14 @@ final class TreeAndSymbolDisplayer() extends SemanticDocumentAnalyser[Elem] {
     implicit val parentScope: Scope = Scope.empty
     val newElem: Elem =
       Node.elem(
-        new QName("sourceDocument"),
+        Node.elemName("sourceDocument"),
         Seq(
-          Node.textElem(new QName("file"), Node.text(fileName.toString)),
-          Node.textElem(new QName("treeStructure"), Node.cdataText(treeStructure)),
+          Node.textElem(Node.elemName("file"), Node.text(fileName.toString)),
+          Node.textElem(Node.elemName("treeStructure"), Node.cdataText(treeStructure)),
           Node.elem(
-            new QName("symbols"),
+            Node.elemName("symbols"),
             symbolInfo.map { si =>
-              Node.textElem(new QName("symbol"), Node.cdataText(si))
+              Node.textElem(Node.elemName("symbol"), Node.cdataText(si))
             }
           )
         )

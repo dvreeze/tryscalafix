@@ -3,6 +3,7 @@ package eu.cdevreeze.tryscalafix.internal
 import eu.cdevreeze.tryscalafix.internal.xmlsupport.Elem
 import eu.cdevreeze.tryscalafix.internal.xmlsupport.Node.cdataText
 import eu.cdevreeze.tryscalafix.internal.xmlsupport.Node.elem
+import eu.cdevreeze.tryscalafix.internal.xmlsupport.Node.elemName
 import eu.cdevreeze.tryscalafix.internal.xmlsupport.Node.text
 import eu.cdevreeze.tryscalafix.internal.xmlsupport.Node.textElem
 import eu.cdevreeze.tryscalafix.internal.xmlsupport.Scope
@@ -12,7 +13,6 @@ import org.scalatest.flatspec.AnyFlatSpec
 
 import java.io.ByteArrayOutputStream
 import java.nio.charset.StandardCharsets
-import javax.xml.namespace.QName
 import javax.xml.transform.TransformerFactory
 import javax.xml.transform.sax.SAXTransformerFactory
 import javax.xml.transform.stream.StreamResult
@@ -23,27 +23,27 @@ class XmlSupportSpec extends AnyFlatSpec {
 
   private val elem1: Elem =
     elem(
-      name = new QName("root"),
+      name = elemName("root"),
       children = Seq(
         textElem(
-          name = new QName("child"),
+          name = elemName("child"),
           text = text("child 1")
         ),
         textElem(
-          name = new QName("child"),
+          name = elemName("child"),
           text = text("child 2")
         ),
         elem(
-          name = new QName("child"),
+          name = elemName("child"),
           children = Seq(
             textElem(
-              name = new QName("grandchild"),
+              name = elemName("grandchild"),
               text = text("grandchild")
             )
           )
         ),
         textElem(
-          name = new QName("child"),
+          name = elemName("child"),
           text = cdataText("child 4")
         )
       )

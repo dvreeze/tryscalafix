@@ -27,6 +27,10 @@ import scala.util.chaining.scalaUtilChainingOps
  */
 final case class Scope(prefixNamespaceMapping: Map[String, String]) {
   require(prefixNamespaceMapping.values.forall(_ != XMLConstants.NULL_NS_URI))
+  require(!prefixNamespaceMapping.contains(XMLConstants.XML_NS_PREFIX))
+
+  def effectivePrefixNamespaceMapping: Map[String, String] =
+    prefixNamespaceMapping.updated(XMLConstants.XML_NS_PREFIX, XMLConstants.XML_NS_URI)
 
   def defaultNamespaceOption: Option[String] = prefixNamespaceMapping.get(XMLConstants.DEFAULT_NS_PREFIX)
 
@@ -36,7 +40,7 @@ final case class Scope(prefixNamespaceMapping: Map[String, String]) {
     if (prefix == XMLConstants.DEFAULT_NS_PREFIX) {
       prefixNamespaceMapping.get(prefix)
     } else {
-      prefixNamespaceMapping
+      effectivePrefixNamespaceMapping
         .getOrElse(prefix, sys.error(s"Could not resolve prefix '$prefix'"))
         .pipe(Option(_))
     }
