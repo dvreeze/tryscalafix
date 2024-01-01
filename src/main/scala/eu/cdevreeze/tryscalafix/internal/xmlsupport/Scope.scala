@@ -36,6 +36,16 @@ final case class Scope(prefixNamespaceMapping: Map[String, String]) {
 
   def withoutDefaultNamespace: Scope = Scope(prefixNamespaceMapping.filterNot(_._1 == XMLConstants.DEFAULT_NS_PREFIX))
 
+  def prefixes: Set[String] = prefixNamespaceMapping.keySet
+
+  def filterPrefixes(prefixes: Set[String]): Scope = {
+    Scope(prefixNamespaceMapping.view.filterKeys(prefixes).toMap)
+  }
+
+  def filterNotPrefixes(prefixes: Set[String]): Scope = {
+    Scope(prefixNamespaceMapping.filterNot(prefNs => prefixes.contains(prefNs._1)))
+  }
+
   def resolve(prefix: String): Option[String] = {
     if (prefix == XMLConstants.DEFAULT_NS_PREFIX) {
       prefixNamespaceMapping.get(prefix)

@@ -23,6 +23,13 @@ import scala.util.chaining.scalaUtilChainingOps
 /**
  * XML tree node, in particular element node or text node.
  *
+ * This API: <ul> <li>Offers thread-safe immutable XML DOM tree nodes, in particular element nodes</li> <li>Is
+ * element-centric in its query and functional update API</li> <li>Makes element tree creation and functional updates
+ * rather easy</li> <li>Offers good support for XML namespaces</li> <li>Does not try to follow XML standards where
+ * that's neither practical nor needed</li> <li>For example, inter-element whitespace is recognized "syntactically"
+ * rather than looking at DTDs</li> <li>As another example, namespace declaration "attributes" are not considered
+ * attributes in this API</li> </ul>
+ *
  * @author
  *   Chris de Vreeze
  */
@@ -109,6 +116,17 @@ final case class Elem(
     findAllChildElems().flatMap(_.findTopmostElemsOrSelf(p))
   }
 
+  // Specific queries
+
+  /**
+   * Returns the concatenation of the texts of text children, including whitespace and CData. Non-text children are
+   * ignored. If there are no text children, the empty string is returned.
+   */
+  def text: String = {
+    val textStrings: Seq[String] = children.collect { case Text(t, _) => t }
+    textStrings.mkString
+  }
+
   // Unsafe functional update API.
 
   /**
@@ -121,6 +139,44 @@ final case class Elem(
    * Scope.
    */
   def unsafeUpdateApi: Node.UnsafeElemUpdateApi = Node.UnsafeElemUpdateApi(this)
+
+  // Specific transformations
+
+  /**
+   * Returns a copy where inter-element whitespace has been removed, throughout the node tree.
+   *
+   * That is, for each descendant-or-self element determines if it has at least one child element and no non-whitespace
+   * text child nodes, and if so, removes all (whitespace) text children.
+   *
+   * This method is useful if it is known that whitespace around element nodes is used for formatting purposes, and (in
+   * the absence of an XML Schema or DTD) can therefore be treated as "ignorable whitespace". In the case of "mixed
+   * content" (if text around element nodes is not all whitespace), this method will not remove any text children of the
+   * parent element.
+   *
+   * XML space attributes (xml:space) are not respected by this method. If such whitespace preservation functionality is
+   * needed, it can be written as a transformation where for specific elements this method is not called.
+   */
+  def removeAllInterElementWhitespace(): Elem = {
+    def isWhitespaceText(n: Node): Boolean = n match {
+      case t: Text if t.text.trim.isEmpty => true
+      case _                              => false
+    }
+
+    def isNonTextNode(n: Node): Boolean = n match {
+      case Text(_, _) => false
+      case _          => true
+    }
+
+    def doStripWhitespace(e: Elem): Boolean =
+      e.findFirstChildElem(_ => true).nonEmpty && e.children.forall(n => isWhitespaceText(n) || isNonTextNode(n))
+
+    // Safe element transformation w.r.t. namespaces.
+    this.unsafeUpdateApi.transformDescendantElemsOrSelf { e =>
+      val childNodes: Seq[Node] = if (doStripWhitespace(e)) e.children.filter(isNonTextNode) else e.children
+      e.unsafeUpdateApi.withChildren(childNodes)
+    }
+  }
+
 }
 
 object Node {
@@ -154,6 +210,28 @@ object Node {
       elm.copy(attributes = newAttributes)
     }
 
+    /**
+     * Replaces the scope by the given Scope. Very unsafe method. Prefer method instead.
+     */
+    def withScope(newScope: Scope): Elem = {
+      elm.copy(scope = newScope)
+    }
+
+    /**
+     * Enhances the Scope with the given parameter Scope, but ignoring its default namespace, if any. Descendant
+     * elements are updated w.r.t. their Scope in the same way.
+     *
+     * This method is meant to prevent namespace undeclarations for non-empty prefixes, which is illegal in XML 1.0.
+     * This method is relatively safe.
+     */
+    def deeplyAddingMissingPrefixesFrom(otherScope: Scope): Elem = {
+      val extraScope: Scope = otherScope.withoutDefaultNamespace.filterNotPrefixes(elm.scope.prefixes)
+
+      elm.unsafeUpdateApi.transformDescendantElemsOrSelf { e =>
+        e.unsafeUpdateApi.withScope(extraScope.resolve(e.scope))
+      }
+    }
+
     def transformChildElems(f: Elem => Elem): Elem = withChildren {
       elm.children.map {
         case che: Elem => f(che)
@@ -169,6 +247,23 @@ object Node {
 
     def transformDescendantElems(f: Elem => Elem): Elem = {
       transformChildElems(_.unsafeUpdateApi.transformDescendantElemsOrSelf(f))
+    }
+
+    def transformChildElemsToNodeSeq(f: Elem => Seq[Node]): Elem = withChildren {
+      elm.children.flatMap {
+        case che: Elem => f(che)
+        case n         => Seq(n)
+      }
+    }
+
+    def transformDescendantElemsOrSelfToNodeSeq(f: Elem => Seq[Node]): Seq[Node] = {
+      // Recursive
+      transformChildElemsToNodeSeq(_.unsafeUpdateApi.transformDescendantElemsOrSelfToNodeSeq(f))
+        .pipe(f)
+    }
+
+    def transformDescendantElemsToNodeSeq(f: Elem => Seq[Node]): Elem = {
+      transformChildElemsToNodeSeq(_.unsafeUpdateApi.transformDescendantElemsOrSelfToNodeSeq(f))
     }
 
   }
@@ -218,5 +313,11 @@ object Node {
 
   def textElem(name: QName, text: Text)(implicit parentScope: Scope): Elem =
     textElem(name, Map.empty, text)(parentScope)
+
+  def emptyElem(name: QName, attrs: Map[QName, String])(implicit parentScope: Scope): Elem =
+    elem(name, attrs, Seq.empty)(parentScope)
+
+  def emptyElem(name: QName)(implicit parentScope: Scope): Elem =
+    emptyElem(name, Map.empty)(parentScope)
 
 }
