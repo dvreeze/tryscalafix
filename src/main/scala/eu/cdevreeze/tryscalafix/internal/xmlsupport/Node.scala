@@ -178,6 +178,21 @@ final case class Elem(
     }
   }
 
+  /**
+   * Enhances the Scope with the given parameter Scope, but ignoring its default namespace, if any. Descendant elements
+   * are updated w.r.t. their Scope in the same way.
+   *
+   * This method is meant to prevent namespace undeclarations for non-empty prefixes, which is illegal in XML 1.0. This
+   * method is safe w.r.t. namespaces, but potentially expensive (depending on the size of the element tree).
+   */
+  def safelyUsingParentScope(otherScope: Scope): Elem = {
+    val extraScope: Scope = otherScope.withoutDefaultNamespace
+
+    this.unsafeUpdateApi.transformDescendantElemsOrSelf { e =>
+      e.unsafeUpdateApi.withScope(extraScope.resolve(e.scope))
+    }
+  }
+
 }
 
 object Node {
@@ -218,20 +233,9 @@ object Node {
       elm.copy(scope = newScope)
     }
 
-    /**
-     * Enhances the Scope with the given parameter Scope, but ignoring its default namespace, if any. Descendant
-     * elements are updated w.r.t. their Scope in the same way.
-     *
-     * This method is meant to prevent namespace undeclarations for non-empty prefixes, which is illegal in XML 1.0.
-     * This method is relatively safe, but potentially expensive (depending on the size of the element tree).
-     */
-    def deeplyAddingMissingPrefixesFrom(otherScope: Scope): Elem = {
-      val extraScope: Scope = otherScope.withoutDefaultNamespace.filterNotPrefixes(elm.scope.prefixes)
-
-      elm.unsafeUpdateApi.transformDescendantElemsOrSelf { e =>
-        e.unsafeUpdateApi.withScope(extraScope.resolve(e.scope))
-      }
-    }
+    // Functional transformation methods. They work in a bottom-up fashion. If instead it is needed
+    // to transform element trees in a top-down fashion, consider recursion instead (where a parent
+    // Scope is typically added as recursive function parameter).
 
     def transformChildElems(f: Elem => Elem): Elem = withChildren {
       elm.children.map {

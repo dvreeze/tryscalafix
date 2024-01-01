@@ -84,8 +84,7 @@ object EnhancePom {
             docElem.unsafeUpdateApi.plusChild {
               Node
                 .emptyElem(Node.elemName("profiles"))
-                .unsafeUpdateApi
-                .deeplyAddingMissingPrefixesFrom(docElem.scope)
+                .safelyUsingParentScope(docElem.scope)
             }
           } else {
             docElem
@@ -97,8 +96,7 @@ object EnhancePom {
 
           docElem.unsafeUpdateApi.transformDescendantElems { e =>
             if (e.name == new QName(mvnNs, "profiles")) {
-              e.unsafeUpdateApi
-                .deeplyAddingMissingPrefixesFrom(templateSemanticdbProfileElem.scope)
+              e.safelyUsingParentScope(templateSemanticdbProfileElem.scope)
                 .unsafeUpdateApi
                 .plusChild(templateSemanticdbProfileElem)
             } else {
