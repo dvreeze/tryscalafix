@@ -46,6 +46,16 @@ final case class Scope(prefixNamespaceMapping: Map[String, String]) {
     }
   }
 
+  def resolve(declarations: Declarations): Scope = {
+    val (decls, undecls) = declarations.prefixNamespaceMapping.partition(_._2.nonEmpty)
+    val undeclaredPrefixes: Set[String] = undecls.keySet
+
+    this.prefixNamespaceMapping
+      .filterNot(prefixNs => undeclaredPrefixes.contains(prefixNs._1))
+      .pipe(Scope.apply)
+      .pipe(_.resolve(Scope(decls)))
+  }
+
   def resolve(otherScope: Scope): Scope = {
     val prefixes: Seq[String] = this.prefixNamespaceMapping.keySet.union(otherScope.prefixNamespaceMapping.keySet).toSeq
     val newMapping: Map[String, String] = prefixes.map { pref =>
