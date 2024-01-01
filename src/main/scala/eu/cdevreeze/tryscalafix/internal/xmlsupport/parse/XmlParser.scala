@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-package eu.cdevreeze.tryscalafix.internal.xmlsupport
+package eu.cdevreeze.tryscalafix.internal.xmlsupport.parse
 
+import eu.cdevreeze.tryscalafix.internal.xmlsupport.Elem
 import org.xml.sax.InputSource
 import org.xml.sax.ext.LexicalHandler
 
 import java.io.{File, FileInputStream, InputStream}
 import java.net.URI
-import javax.xml.parsers.SAXParser
-import javax.xml.parsers.SAXParserFactory
+import javax.xml.parsers.{SAXParser, SAXParserFactory}
 import scala.util.control.Exception.ignoring
 
 /**

@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-package eu.cdevreeze.tryscalafix.internal.xmlsupport
+package eu.cdevreeze.tryscalafix.internal.xmlsupport.parse
 
-import eu.cdevreeze.tryscalafix.internal.xmlsupport.ElemProducingSaxHandler.DefaultHandler.InternalElemNode
-import eu.cdevreeze.tryscalafix.internal.xmlsupport.ElemProducingSaxHandler.DefaultHandler.InternalTextNode
+import eu.cdevreeze.tryscalafix.internal.xmlsupport.{Declarations, Elem, Node, Scope, Text}
+import ElemProducingSaxHandler.DefaultHandler.InternalElemNode
+import ElemProducingSaxHandler.DefaultHandler.InternalTextNode
 import org.xml.sax.Attributes
 import org.xml.sax.ext.LexicalHandler
 import org.xml.sax.helpers.DefaultHandler

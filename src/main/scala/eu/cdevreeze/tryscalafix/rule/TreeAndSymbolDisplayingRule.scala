@@ -20,7 +20,7 @@ import eu.cdevreeze.tryscalafix.analyser.TreeAndSymbolDisplayer
 import eu.cdevreeze.tryscalafix.internal.xmlsupport.Elem
 import eu.cdevreeze.tryscalafix.internal.xmlsupport.Node
 import eu.cdevreeze.tryscalafix.internal.xmlsupport.Scope
-import eu.cdevreeze.tryscalafix.internal.xmlsupport.XmlPrinter
+import eu.cdevreeze.tryscalafix.internal.xmlsupport.print.XmlPrinter
 import scalafix.patch.Patch
 import scalafix.v1.SemanticDocument
 import scalafix.v1.SemanticRule

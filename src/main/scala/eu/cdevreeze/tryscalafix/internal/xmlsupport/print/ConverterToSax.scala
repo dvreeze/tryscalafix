@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package eu.cdevreeze.tryscalafix.internal.xmlsupport
+package eu.cdevreeze.tryscalafix.internal.xmlsupport.print
 
+import eu.cdevreeze.tryscalafix.internal.xmlsupport.{Declarations, Elem, Node, Scope, Text}
+import org.xml.sax.{Attributes, ContentHandler}
 import org.xml.sax.ext.LexicalHandler
 import org.xml.sax.helpers.AttributesImpl
-import org.xml.sax.Attributes
-import org.xml.sax.ContentHandler
 
 import javax.xml.XMLConstants
 import javax.xml.namespace.QName

@@ -17,6 +17,8 @@
 package eu.cdevreeze.tryscalafix.internal.xmlsupport
 
 import Node._
+import eu.cdevreeze.tryscalafix.internal.xmlsupport.parse.XmlParser
+import eu.cdevreeze.tryscalafix.internal.xmlsupport.print.XmlPrinter
 import org.scalatest.flatspec.AnyFlatSpec
 
 import java.io.ByteArrayInputStream
