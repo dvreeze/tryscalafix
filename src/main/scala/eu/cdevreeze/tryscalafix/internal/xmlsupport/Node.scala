@@ -162,17 +162,18 @@ final case class Elem(
       case _                              => false
     }
 
-    def isNonTextNode(n: Node): Boolean = n match {
-      case Text(_, _) => false
-      case _          => true
+    def isTextNode(n: Node): Boolean = n match {
+      case Text(_, _) => true
+      case _          => false
     }
 
     def doStripWhitespace(e: Elem): Boolean =
-      e.findFirstChildElem(_ => true).nonEmpty && e.children.forall(n => isWhitespaceText(n) || isNonTextNode(n))
+      e.findFirstChildElem(_ => true).nonEmpty &&
+        e.children.forall(n => isWhitespaceText(n) || !isTextNode(n))
 
     // Safe element transformation w.r.t. namespaces.
     this.unsafeUpdateApi.transformDescendantElemsOrSelf { e =>
-      val childNodes: Seq[Node] = if (doStripWhitespace(e)) e.children.filter(isNonTextNode) else e.children
+      val childNodes: Seq[Node] = if (doStripWhitespace(e)) e.children.filterNot(isTextNode) else e.children
       e.unsafeUpdateApi.withChildren(childNodes)
     }
   }
@@ -211,7 +212,7 @@ object Node {
     }
 
     /**
-     * Replaces the scope by the given Scope. Very unsafe method. Prefer method instead.
+     * Replaces the scope by the given Scope. Very unsafe method. Prefer method deeplyAddingMissingPrefixesFrom instead.
      */
     def withScope(newScope: Scope): Elem = {
       elm.copy(scope = newScope)
@@ -222,7 +223,7 @@ object Node {
      * elements are updated w.r.t. their Scope in the same way.
      *
      * This method is meant to prevent namespace undeclarations for non-empty prefixes, which is illegal in XML 1.0.
-     * This method is relatively safe.
+     * This method is relatively safe, but potentially expensive (depending on the size of the element tree).
      */
     def deeplyAddingMissingPrefixesFrom(otherScope: Scope): Elem = {
       val extraScope: Scope = otherScope.withoutDefaultNamespace.filterNotPrefixes(elm.scope.prefixes)
