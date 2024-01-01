@@ -17,6 +17,7 @@
 package eu.cdevreeze.tryscalafix.internal
 
 import eu.cdevreeze.tryscalafix.internal.xmlsupport.Elem
+import eu.cdevreeze.tryscalafix.internal.xmlsupport.Node
 import eu.cdevreeze.tryscalafix.internal.xmlsupport.Scope
 import eu.cdevreeze.tryscalafix.internal.xmlsupport.Text
 import eu.cdevreeze.tryscalafix.internal.xmlsupport.XmlParser
@@ -36,9 +37,8 @@ import javax.xml.transform.stream.StreamResult
 
 class XmlSupportSpec extends AnyFlatSpec {
 
-  private implicit val elem1Scope: Scope = Scope.empty
-
-  private val elem1: Elem =
+  private val elem1: Elem = {
+    implicit val elem1Scope: Scope = Scope.empty
     elem(
       name = elemName("root"),
       children = Seq(
@@ -65,6 +65,7 @@ class XmlSupportSpec extends AnyFlatSpec {
         )
       )
     )
+  }
 
   private val xmlString1: String =
     """
@@ -115,6 +116,42 @@ class XmlSupportSpec extends AnyFlatSpec {
     assert(elemOption.isEmpty === true)
   }
 
+  behavior.of("transforming XML")
+
+  it should "return the same node tree when changing namespace prefixes" in {
+    val ns = "http://default-namespace"
+    val elem1Adapted: Elem =
+      elem1.unsafeUpdateApi.transformDescendantElemsOrSelf { e =>
+        implicit val scope: Scope = Scope(Map("" -> ns, "ns" -> ns))
+        Node.elem(Node.elemName(e.name.getLocalPart), e.attributes, e.children)
+      }
+
+    assert(elem1Adapted.findAllDescendantElemsOrSelf().map(_.scope).distinct === Seq(Scope(Map("" -> ns, "ns" -> ns))))
+    assert(elem1Adapted.findAllDescendantElemsOrSelf().map(_.name.getNamespaceURI).distinct === Seq(ns))
+    assert(elem1Adapted.findAllDescendantElemsOrSelf().map(_.name.getPrefix).distinct === Seq(""))
+
+    val elem1Copy: Elem =
+      elem1Adapted.unsafeUpdateApi.transformDescendantElemsOrSelf { e =>
+        implicit val scope: Scope = Scope.empty
+        Node.elem(Node.elemName(e.name.getLocalPart), e.attributes, e.children)
+      }
+
+    assert(elem1Copy === elem1)
+
+    val elem1Adapted2: Elem =
+      elem1Adapted.unsafeUpdateApi.transformDescendantElemsOrSelf { e =>
+        implicit val scope: Scope = Scope(Map("ns" -> ns, "" -> ns))
+        Node.elem(Node.elemName("ns", e.name.getLocalPart), e.attributes, e.children)
+      }
+
+    assert(elem1Adapted2.findAllDescendantElemsOrSelf().map(_.scope).distinct === Seq(Scope(Map("ns" -> ns, "" -> ns))))
+    assert(elem1Adapted2.findAllDescendantElemsOrSelf().map(_.name.getNamespaceURI).distinct === Seq(ns))
+    assert(elem1Adapted2.findAllDescendantElemsOrSelf().map(_.name.getPrefix).distinct === Seq("ns"))
+
+    // Note that QName equality does not take prefixes into account
+    assert(elem1Adapted2 === elem1Adapted)
+  }
+
   behavior.of("serialisation of XML")
 
   it should "serialize XML correctly" in {
@@ -163,6 +200,65 @@ class XmlSupportSpec extends AnyFlatSpec {
     val docElem: Elem = xmlParser.parse(new ByteArrayInputStream(xmlString.getBytes(StandardCharsets.UTF_8)))
 
     assert(ignoreWhitespace(docElem) === elem1)
+  }
+
+  it should "serialize XML (partly enhanced with default namespace) and then parse into (almost) the same XML node tree" in {
+    val ns = "http://default-namespace"
+    val elem1Adapted: Elem =
+      elem1.unsafeUpdateApi.transformDescendantElems { e =>
+        implicit val scope: Scope = Scope(Map("" -> ns))
+        Node.elem(Node.elemName(e.name.getLocalPart), e.attributes, e.children)
+      }
+
+    assert(elem1Adapted.scope === Scope.empty)
+    assert(elem1Adapted.name === new QName("root"))
+
+    assert(elem1Adapted.findAllDescendantElems().map(_.scope).distinct === Seq(Scope(Map("" -> ns))))
+    assert(elem1Adapted.findAllDescendantElems().map(_.name.getNamespaceURI).distinct === Seq(ns))
+
+    val bos = new ByteArrayOutputStream()
+    val result = new StreamResult(bos)
+    XmlPrinter.newDefaultInstance().print(elem1Adapted, result)
+    val xmlString = bos.toString(StandardCharsets.UTF_8)
+
+    println(xmlString)
+
+    val xmlParser = XmlParser.newInstance()
+    val docElem: Elem = xmlParser.parse(new ByteArrayInputStream(xmlString.getBytes(StandardCharsets.UTF_8)))
+
+    val docElemWithoutNs: Elem = docElem.unsafeUpdateApi.transformDescendantElemsOrSelf { e =>
+      implicit val scope: Scope = Scope.empty
+      Node.elem(Node.elemName(e.name.getLocalPart), e.attributes, e.children)
+    }
+    assert(ignoreWhitespace(docElemWithoutNs) === elem1)
+  }
+
+  it should "serialize XML (enhanced with default namespace) and then parse into (almost) the same XML node tree" in {
+    val ns = "http://default-namespace"
+    val elem1Adapted: Elem =
+      elem1.unsafeUpdateApi.transformDescendantElemsOrSelf { e =>
+        implicit val scope: Scope = Scope(Map("" -> ns))
+        Node.elem(Node.elemName(e.name.getLocalPart), e.attributes, e.children)
+      }
+
+    assert(elem1Adapted.findAllDescendantElemsOrSelf().map(_.scope).distinct === Seq(Scope(Map("" -> ns))))
+    assert(elem1Adapted.findAllDescendantElemsOrSelf().map(_.name.getNamespaceURI).distinct === Seq(ns))
+
+    val bos = new ByteArrayOutputStream()
+    val result = new StreamResult(bos)
+    XmlPrinter.newDefaultInstance().print(elem1Adapted, result)
+    val xmlString = bos.toString(StandardCharsets.UTF_8)
+
+    println(xmlString)
+
+    val xmlParser = XmlParser.newInstance()
+    val docElem: Elem = xmlParser.parse(new ByteArrayInputStream(xmlString.getBytes(StandardCharsets.UTF_8)))
+
+    val docElemWithoutNs: Elem = docElem.unsafeUpdateApi.transformDescendantElemsOrSelf { e =>
+      implicit val scope: Scope = Scope.empty
+      Node.elem(Node.elemName(e.name.getLocalPart), e.attributes, e.children)
+    }
+    assert(ignoreWhitespace(docElemWithoutNs) === elem1)
   }
 
   private def ignoreWhitespace(elm: Elem): Elem = {
