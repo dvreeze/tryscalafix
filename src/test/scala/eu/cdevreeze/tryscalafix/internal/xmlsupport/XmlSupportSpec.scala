@@ -14,19 +14,9 @@
  * limitations under the License.
  */
 
-package eu.cdevreeze.tryscalafix.internal
+package eu.cdevreeze.tryscalafix.internal.xmlsupport
 
-import eu.cdevreeze.tryscalafix.internal.xmlsupport.Elem
-import eu.cdevreeze.tryscalafix.internal.xmlsupport.Node
-import eu.cdevreeze.tryscalafix.internal.xmlsupport.Scope
-import eu.cdevreeze.tryscalafix.internal.xmlsupport.Text
-import eu.cdevreeze.tryscalafix.internal.xmlsupport.XmlParser
-import eu.cdevreeze.tryscalafix.internal.xmlsupport.XmlPrinter
-import eu.cdevreeze.tryscalafix.internal.xmlsupport.Node.cdataText
-import eu.cdevreeze.tryscalafix.internal.xmlsupport.Node.elem
-import eu.cdevreeze.tryscalafix.internal.xmlsupport.Node.elemName
-import eu.cdevreeze.tryscalafix.internal.xmlsupport.Node.text
-import eu.cdevreeze.tryscalafix.internal.xmlsupport.Node.textElem
+import Node._
 import org.scalatest.flatspec.AnyFlatSpec
 
 import java.io.ByteArrayInputStream
