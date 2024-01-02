@@ -20,9 +20,12 @@ import eu.cdevreeze.tryscalafix.internal.xmlsupport.Elem
 import org.xml.sax.InputSource
 import org.xml.sax.ext.LexicalHandler
 
-import java.io.{File, FileInputStream, InputStream}
+import java.io.File
+import java.io.FileInputStream
+import java.io.InputStream
 import java.net.URI
-import javax.xml.parsers.{SAXParser, SAXParserFactory}
+import javax.xml.parsers.SAXParser
+import javax.xml.parsers.SAXParserFactory
 import scala.util.control.Exception.ignoring
 
 /**

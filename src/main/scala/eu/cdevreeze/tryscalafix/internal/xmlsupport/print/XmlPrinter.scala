@@ -19,7 +19,9 @@ package eu.cdevreeze.tryscalafix.internal.xmlsupport.print
 import eu.cdevreeze.tryscalafix.internal.xmlsupport.Elem
 import org.xml.sax.ContentHandler
 
-import javax.xml.transform.{OutputKeys, Result, TransformerFactory}
+import javax.xml.transform.OutputKeys
+import javax.xml.transform.Result
+import javax.xml.transform.TransformerFactory
 import javax.xml.transform.sax.SAXTransformerFactory
 import scala.util.chaining.scalaUtilChainingOps
 

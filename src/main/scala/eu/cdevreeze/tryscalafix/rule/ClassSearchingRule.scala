@@ -20,12 +20,12 @@ import scalafix.patch.Patch
 import scalafix.v1._
 
 /**
- * SemanticRule that runs a SemanticDocumentAnalyser.
+ * SemanticRule that finds classes by given criteria, by invoking ClassSearcher.
  *
  * @author
  *   Chris de Vreeze
  */
-final class AnalyserRunningRule extends SemanticRule("AnalyserRunner") {
+final class ClassSearchingRule extends SemanticRule("ClassSearchingRule") {
 
   override def fix(implicit doc: SemanticDocument): Patch = {
     Patch.empty

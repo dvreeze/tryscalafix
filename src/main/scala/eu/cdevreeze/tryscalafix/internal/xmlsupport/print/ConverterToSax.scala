@@ -16,8 +16,13 @@
 
 package eu.cdevreeze.tryscalafix.internal.xmlsupport.print
 
-import eu.cdevreeze.tryscalafix.internal.xmlsupport.{Declarations, Elem, Node, Scope, Text}
-import org.xml.sax.{Attributes, ContentHandler}
+import eu.cdevreeze.tryscalafix.internal.xmlsupport.Declarations
+import eu.cdevreeze.tryscalafix.internal.xmlsupport.Elem
+import eu.cdevreeze.tryscalafix.internal.xmlsupport.Node
+import eu.cdevreeze.tryscalafix.internal.xmlsupport.Scope
+import eu.cdevreeze.tryscalafix.internal.xmlsupport.Text
+import org.xml.sax.Attributes
+import org.xml.sax.ContentHandler
 import org.xml.sax.ext.LexicalHandler
 import org.xml.sax.helpers.AttributesImpl
 
