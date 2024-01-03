@@ -16,6 +16,7 @@
 
 package eu.cdevreeze.tryscalafix.internal.xmlsupport.print
 
+import eu.cdevreeze.tryscalafix.internal.xmlsupport.Comment
 import eu.cdevreeze.tryscalafix.internal.xmlsupport.Declarations
 import eu.cdevreeze.tryscalafix.internal.xmlsupport.Elem
 import eu.cdevreeze.tryscalafix.internal.xmlsupport.Node
@@ -45,9 +46,10 @@ final class ConverterToSax(val handler: ContentHandler) {
 
   def convertNode(node: Node, parentScope: Scope): Unit = {
     node match {
-      case e: Elem => convertElem(e, parentScope)
-      case t: Text => convertText(t)
-      case _       => ()
+      case e: Elem    => convertElem(e, parentScope)
+      case t: Text    => convertText(t)
+      case c: Comment => convertComment(c)
+      case _          => ()
     }
   }
 
@@ -80,6 +82,13 @@ final class ConverterToSax(val handler: ContentHandler) {
         if (t.isCData) handler.endCDATA()
       case _ =>
         handler.characters(t.text.toCharArray, 0, t.text.length)
+    }
+  }
+
+  def convertComment(c: Comment): Unit = {
+    handler match {
+      case handler: ContentHandler with LexicalHandler =>
+        handler.comment(c.text.toCharArray, 0, c.text.length)
     }
   }
 

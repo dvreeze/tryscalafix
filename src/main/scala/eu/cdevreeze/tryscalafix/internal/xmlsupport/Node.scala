@@ -37,6 +37,8 @@ sealed trait Node
 
 final case class Text(text: String, isCData: Boolean) extends Node
 
+final case class Comment(text: String) extends Node
+
 final case class Elem(
     name: QName,
     attributes: Map[QName, String],
@@ -301,6 +303,8 @@ object Node {
   def text(t: String): Text = Text(t, isCData = false)
 
   def cdataText(t: String): Text = Text(t, isCData = true)
+
+  def comment(t: String): Comment = Comment(t)
 
   def elem(name: QName, attrs: Map[QName, String], children: Seq[Node])(implicit parentScope: Scope): Elem =
     Elem(

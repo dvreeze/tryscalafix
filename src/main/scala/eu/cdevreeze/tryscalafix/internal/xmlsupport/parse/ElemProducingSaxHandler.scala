@@ -16,11 +16,13 @@
 
 package eu.cdevreeze.tryscalafix.internal.xmlsupport.parse
 
+import eu.cdevreeze.tryscalafix.internal.xmlsupport.Comment
 import eu.cdevreeze.tryscalafix.internal.xmlsupport.Declarations
 import eu.cdevreeze.tryscalafix.internal.xmlsupport.Elem
 import eu.cdevreeze.tryscalafix.internal.xmlsupport.Node
 import eu.cdevreeze.tryscalafix.internal.xmlsupport.Scope
 import eu.cdevreeze.tryscalafix.internal.xmlsupport.Text
+import ElemProducingSaxHandler.DefaultHandler.InternalCommentNode
 import ElemProducingSaxHandler.DefaultHandler.InternalElemNode
 import ElemProducingSaxHandler.DefaultHandler.InternalTextNode
 import org.xml.sax.Attributes
@@ -134,11 +136,21 @@ object ElemProducingSaxHandler {
 
     override def endDTD(): Unit = {}
 
+    override def comment(ch: Array[Char], start: Int, length: Int): Unit = {
+      val comment = new InternalCommentNode(new String(ch, start, length))
+
+      // Comments that are siblings of the document element are lost.
+
+      if (currentRoot eq null) {
+        require(currentElem eq null)
+      } else if (currentElem ne null) {
+        currentElem.addChild(comment)
+      }
+    }
+
     override def startEntity(name: String): Unit = {}
 
     override def endEntity(name: String): Unit = {}
-
-    override def comment(ch: Array[Char], start: Int, length: Int): Unit = {}
 
     override def resultingElem: Elem = {
       require(currentRoot ne null, "When parsing is ready, the current root must not be null")
@@ -268,6 +280,12 @@ object ElemProducingSaxHandler {
       type NodeType = Text
 
       def toNode: Text = Text(text = text, isCData = isCData)
+    }
+
+    private case class InternalCommentNode(text: String) extends InternalNode {
+      type NodeType = Comment
+
+      def toNode: Comment = Comment(text = text)
     }
 
   }

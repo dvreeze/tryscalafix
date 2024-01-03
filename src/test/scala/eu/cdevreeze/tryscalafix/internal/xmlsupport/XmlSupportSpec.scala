@@ -34,6 +34,7 @@ class XmlSupportSpec extends AnyFlatSpec {
     elem(
       name = elemName("root"),
       children = Seq(
+        comment(" root children "),
         textElem(
           name = elemName("child"),
           text = text("child 1")
@@ -258,6 +259,7 @@ class XmlSupportSpec extends AnyFlatSpec {
       e.unsafeUpdateApi.withChildren(e.children.collect {
         case che: Elem                       => che
         case t: Text if t.text.trim.nonEmpty => t
+        case c: Comment                      => c
       })
     }
   }
