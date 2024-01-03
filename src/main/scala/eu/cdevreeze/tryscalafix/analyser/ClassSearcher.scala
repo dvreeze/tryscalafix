@@ -17,7 +17,6 @@
 package eu.cdevreeze.tryscalafix.analyser
 
 import eu.cdevreeze.tryscalafix.SemanticDocumentAnalyser
-import eu.cdevreeze.tryscalafix.SemanticDocumentAnalyserFactory
 import eu.cdevreeze.tryscalafix.analyser.classfinder.ClassFinder.SearchResult
 import eu.cdevreeze.tryscalafix.analyser.classfinder.ClassFinder
 import eu.cdevreeze.tryscalafix.analyser.classfinder.ClassFinderConfig
@@ -82,19 +81,6 @@ final class ClassSearcher(val config: ClassFinderConfig) extends SemanticDocumen
         )
       }
     )
-  }
-
-}
-
-object ClassSearcher extends SemanticDocumentAnalyserFactory[Elem, ClassSearcher] {
-
-  // TODO What do we want here? metaconfig or circe JSON support?
-
-  override def create(config: SemanticDocumentAnalyserFactory.JsonConfig): ClassSearcher = {
-    config.value
-      .as[ClassFinderConfig]
-      .map(cfg => new ClassSearcher(cfg))
-      .getOrElse(sys.error(s"Could not decode JSON as ClassFinderConfig"))
   }
 
 }

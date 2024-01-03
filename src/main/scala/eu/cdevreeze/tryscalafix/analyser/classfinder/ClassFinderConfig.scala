@@ -16,8 +16,6 @@
 
 package eu.cdevreeze.tryscalafix.analyser.classfinder
 
-import io.circe.Decoder
-import io.circe.generic.semiauto.deriveDecoder
 import metaconfig.ConfDecoder
 import metaconfig.generic.Surface
 
@@ -35,6 +33,4 @@ object ClassFinderConfig {
   val default: ClassFinderConfig = ClassFinderConfig()
   implicit val surface: Surface[ClassFinderConfig] = metaconfig.generic.deriveSurface[ClassFinderConfig]
   implicit val decoder: ConfDecoder[ClassFinderConfig] = metaconfig.generic.deriveDecoder(default)
-
-  implicit val jsonDecoder: Decoder[ClassFinderConfig] = deriveDecoder
 }
