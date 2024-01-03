@@ -22,6 +22,8 @@ Compiling into ".semanticdb" files:
 
     mvn clean compile -Psemanticdb -f pom-semanticdb.xml
 
+Running the rule:
+
 .. code-block:: bash
 
     mvn scalafix:scalafix -Dscalafix.config=.scalafix.XYZ.conf -Psemanticdb -f pom-semanticdb.xml
