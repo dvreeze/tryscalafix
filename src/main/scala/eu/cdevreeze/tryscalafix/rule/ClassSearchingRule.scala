@@ -18,17 +18,21 @@ package eu.cdevreeze.tryscalafix.rule
 
 import eu.cdevreeze.tryscalafix.analyser.ClassSearcher
 import eu.cdevreeze.tryscalafix.analyser.classfinder.ClassFinderConfig
-import eu.cdevreeze.tryscalafix.internal.xmlsupport.print.XmlPrinter
 import eu.cdevreeze.tryscalafix.internal.xmlsupport.Elem
 import eu.cdevreeze.tryscalafix.internal.xmlsupport.Node
 import eu.cdevreeze.tryscalafix.internal.xmlsupport.Scope
+import eu.cdevreeze.tryscalafix.rule.ClassSearchingRule.SearchResult
+import io.circe.Encoder
+import io.circe.Json
+import io.circe.Printer
+import io.circe.generic.semiauto.deriveEncoder
+import io.circe.syntax.EncoderOps
 import metaconfig.Configured
 import scalafix.patch.Patch
 import scalafix.v1._
 
 import java.util.concurrent.atomic.AtomicReference
 import javax.xml.namespace.QName
-import javax.xml.transform.stream.StreamResult
 
 /**
  * SemanticRule that finds classes by given criteria, by invoking ClassSearcher.
@@ -67,8 +71,29 @@ final class ClassSearchingRule(val config: ClassFinderConfig) extends SemanticRu
   }
 
   override def afterComplete(): Unit = {
-    // TODO Some post-processing on the resulting XML (maybe turn a summary into JSON)
-    XmlPrinter.newDefaultInstance().print(accumulatedElem.get(), new StreamResult(System.out))
+    val resultElem: Elem = accumulatedElem.get()
+
+    val searchResultElems: Seq[Elem] = resultElem.filterDescendantElems(_.name.getLocalPart == "searchResult")
+
+    val searchResults: Seq[SearchResult] = searchResultElems.map { elm =>
+      SearchResult(
+        classCategory = elm.findFirstChildElem(_.name.getLocalPart == "classCategory").map(_.text).getOrElse(""),
+        foundClasses = elm.filterDescendantElems(_.name.getLocalPart == "definition").map(_.text)
+      )
+    }
+
+    val groupedSearchResults: Map[String, Seq[SearchResult]] = searchResults.groupBy(_.classCategory)
+
+    val searchResultSummaries: Seq[SearchResult] = groupedSearchResults.toSeq
+      .map { case (classCategory, resultGroups) =>
+        SearchResult(classCategory, resultGroups.flatMap(_.foundClasses).distinct)
+      }
+
+    val searchResultSummariesJson: Json = searchResultSummaries.asJson
+
+    val jsonString: String = searchResultSummariesJson.printWith(Printer.spaces2)
+
+    println(jsonString)
 
     super.afterComplete()
   }
@@ -87,4 +112,11 @@ final class ClassSearchingRule(val config: ClassFinderConfig) extends SemanticRu
     Patch.empty
   }
 
+}
+
+object ClassSearchingRule {
+
+  final case class SearchResult(classCategory: String, foundClasses: Seq[String])
+
+  implicit val searchResultEncoder: Encoder[SearchResult] = deriveEncoder
 }
