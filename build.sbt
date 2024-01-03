@@ -3,7 +3,7 @@ val crossScalaVer = Seq(scalaVer)
 
 ThisBuild / description := "Trying out Scalafix for helping understand large (Scala) code bases"
 ThisBuild / organization := "eu.cdevreeze.tryscalafix"
-ThisBuild / version := "0.3.0-SNAPSHOT"
+ThisBuild / version := "0.3.0"
 
 ThisBuild / versionScheme := Some("strict")
 
