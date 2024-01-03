@@ -24,7 +24,7 @@
                     <plugins>
                         <plugin>
                             <groupId>net.alchim31.maven</groupId>
-                            <artifactId>scala-maven-plugin_${scala.binary.version}</artifactId>
+                            <artifactId>scala-maven-plugin</artifactId>
                             <configuration>
                                 <compilerPlugins>
                                     <compilerPlugin>
