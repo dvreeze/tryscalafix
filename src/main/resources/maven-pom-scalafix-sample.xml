@@ -9,9 +9,11 @@
     <!-- See https://github.com/evis/scalafix-maven-plugin -->
     <!-- Below there is an example of how to use rules occurring in this project in a Maven Scala project -->
     <!-- Use the Maven profile "semanticdb" to have the compiler emit semanticdb files (besides class files) -->
-    <!-- Do not forget to add a .scalafix.conf file to the root of the Maven Scala project -->
-    <!-- It should contain one or more rules from this tryscalafix project -->
-    <!-- Running the rule(s): "mvn scalafix:scalafix -Psemanticdb" -->
+    <!-- Do not forget to add .scalafix.XYZ.conf files to the root of the Maven Scala project -->
+    <!-- In this case, they should each contain one rule from this tryscalafix project, with configuration -->
+    <!-- Running a rule: "mvn scalafix:scalafix -Psemanticdb -Dscalafix.config=.scalafix.XYZ.conf -f pom-semanticdb.xml" -->
+    <!-- Before running any rule: "mvn clean compile -Psemanticdb -f pom-semanticdb.xml" -->
+    <!-- The pom-semanticdb.xml is output from program EnhancePom (in the tryscalafix project) -->
 
     <!-- I have only seen this work so far for Scala 2.13 Maven projects -->
     <!-- Do not forget to set properties like "semanticdb.version" in the POM file -->

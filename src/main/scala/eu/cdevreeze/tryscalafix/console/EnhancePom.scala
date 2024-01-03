@@ -23,13 +23,15 @@ import eu.cdevreeze.tryscalafix.internal.xmlsupport.parse.XmlParser
 import eu.cdevreeze.tryscalafix.internal.xmlsupport.print.XmlPrinter
 
 import java.io.File
+import java.nio.file.Files
 import java.nio.file.Path
 import javax.xml.namespace.QName
 import javax.xml.transform.stream.StreamResult
 import scala.util.chaining.scalaUtilChainingOps
 
 /**
- * Enhances an input POM file with Scalafix rules from this project.
+ * Enhances an input POM file with Scalafix rules from this project. The output is a pom-semanticdb.xml file in the same
+ * directory as the input POM file.
  *
  * @author
  *   Chris de Vreeze
@@ -43,6 +45,10 @@ object EnhancePom {
   def main(args: Array[String]): Unit = {
     require(args.lengthIs == 1, s"Usage: EnhancePom <POM file path>")
     val pomFile = Path.of(args(0))
+    val targetPomFile = Option(pomFile.getParent)
+      .ensuring(_.nonEmpty, s"No parent Path found for Path '$pomFile'")
+      .get
+      .resolve(Path.of("pom-semanticdb.xml"))
 
     val xmlParser: XmlParser = XmlParser.newInstance()
 
@@ -68,44 +74,50 @@ object EnhancePom {
         .ensuring(_.nonEmpty, s"Missing semanticdb profile in template POM file ('programming' error)")
         .get
 
-    val enhancedPomElem: Elem =
-      pomDocElem
-        .pipe { docElem =>
-          // Removing semanticdb profile element, if any
-          docElem.unsafeUpdateApi.transformDescendantElemsToNodeSeq { e =>
-            if (isSemanticdbProfileElem(e)) Seq.empty else Seq(e)
-          }
-        }
-        .pipe { docElem =>
-          // Adding profiles element, if absent
-          if (docElem.findFirstChildElem(isProfilesElem).isEmpty) {
-            implicit val scope: Scope = defaultScope
+    val enhancedPomElem: Elem = enhancePom(pomDocElem, templateSemanticdbProfileElem)
 
-            docElem.unsafeUpdateApi.plusChild {
-              Node
-                .emptyElem(Node.elemName("profiles"))
-                .safelyUsingParentScope(docElem.scope)
-            }
-          } else {
-            docElem
-          }
+    if (targetPomFile.toFile.isFile) {
+      Files.delete(targetPomFile)
+    }
+    XmlPrinter.newDefaultInstance().print(enhancedPomElem, new StreamResult(targetPomFile.toFile))
+  }
+
+  private def enhancePom(pomDocElem: Elem, templateSemanticdbProfileElem: Elem): Elem = {
+    pomDocElem
+      .pipe { docElem =>
+        // Removing semanticdb profile element, if any
+        docElem.unsafeUpdateApi.transformDescendantElemsToNodeSeq { e =>
+          if (isSemanticdbProfileElem(e)) Seq.empty else Seq(e)
         }
-        .pipe { docElem =>
-          // Adding semanticdb profile element from template
+      }
+      .pipe { docElem =>
+        // Adding profiles element, if absent
+        if (docElem.findFirstChildElem(isProfilesElem).isEmpty) {
           implicit val scope: Scope = defaultScope
 
-          docElem.unsafeUpdateApi.transformDescendantElems { e =>
-            if (e.name == new QName(mvnNs, "profiles")) {
-              e.safelyUsingParentScope(templateSemanticdbProfileElem.scope)
-                .unsafeUpdateApi
-                .plusChild(templateSemanticdbProfileElem)
-            } else {
-              e
-            }
+          docElem.unsafeUpdateApi.plusChild {
+            Node
+              .emptyElem(Node.elemName("profiles"))
+              .safelyUsingParentScope(docElem.scope)
+          }
+        } else {
+          docElem
+        }
+      }
+      .pipe { docElem =>
+        // Adding semanticdb profile element from template
+        implicit val scope: Scope = defaultScope
+
+        docElem.unsafeUpdateApi.transformDescendantElems { e =>
+          if (e.name == new QName(mvnNs, "profiles")) {
+            e.safelyUsingParentScope(templateSemanticdbProfileElem.scope)
+              .unsafeUpdateApi
+              .plusChild(templateSemanticdbProfileElem)
+          } else {
+            e
           }
         }
-
-    XmlPrinter.newDefaultInstance().print(enhancedPomElem, new StreamResult(System.out))
+      }
   }
 
   private def isProfilesElem(elm: Elem): Boolean = {

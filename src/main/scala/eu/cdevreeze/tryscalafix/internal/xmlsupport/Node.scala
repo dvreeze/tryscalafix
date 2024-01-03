@@ -37,6 +37,9 @@ sealed trait Node
 
 final case class Text(text: String, isCData: Boolean) extends Node
 
+/**
+ * Comment node (but not top-level as document element sibling, since document nodes are not modelled).
+ */
 final case class Comment(text: String) extends Node
 
 final case class Elem(
