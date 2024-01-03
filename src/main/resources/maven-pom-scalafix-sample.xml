@@ -16,7 +16,6 @@
     <!-- The pom-semanticdb.xml is output from program EnhancePom (in the tryscalafix project) -->
 
     <!-- I have only seen this work so far for Scala 2.13 Maven projects -->
-    <!-- Do not forget to set properties like "semanticdb.version" in the POM file -->
 
     <profiles>
         <profile>
@@ -31,8 +30,8 @@
                                 <compilerPlugins>
                                     <compilerPlugin>
                                         <groupId>org.scalameta</groupId>
-                                        <artifactId>semanticdb-scalac_${scala.binary.version}</artifactId>
-                                        <version>${semanticdb.version}</version>
+                                        <artifactId>semanticdb-scalac_2.13.12</artifactId>
+                                        <version>4.8.15</version>
                                     </compilerPlugin>
                                 </compilerPlugins>
                             </configuration>
@@ -53,7 +52,7 @@
                             <dependency>
                                 <groupId>eu.cdevreeze.tryscalafix</groupId>
                                 <artifactId>tryscalafix_2.13</artifactId>
-                                <version>0.2.0</version>
+                                <version>0.3.0</version>
                             </dependency>
                         </dependencies>
                     </plugin>
