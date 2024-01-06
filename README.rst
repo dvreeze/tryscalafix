@@ -26,7 +26,23 @@ Running the rule:
 
 .. code-block:: bash
 
-    mvn scalafix:scalafix -Dscalafix.config=.scalafix.XYZ.conf -Psemanticdb -f pom-semanticdb.xml
+    mvn scalafix:scalafix -Dscalafix.config=.scalafix.<XYZ>.conf -Psemanticdb -f pom-semanticdb.xml
+
+If rule ShowTreeAndSymbols should run on one source file, and the chosen config file has this content:
+
+.. code-block::
+
+    rules = [
+      TreeAndSymbolDisplayingRule
+    ]
+
+then we could do so (roughly) as follows:
+
+.. code-block:: bash
+
+    mvn scalafix:scalafix -Dscalafix.config=.scalafix-TreeAndSymbolDisplayingRule \
+      -Dscalafix.command.line.args="--files=src/main/scala/com/test/MyClass.scala" \
+      -Psemanticdb -f pom-semanticdb.xml
 
 .. _`Scalafix`: https://scalacenter.github.io/scalafix/docs/users/installation.html
 .. _`Scalameta`: https://scalameta.org
