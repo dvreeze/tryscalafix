@@ -22,15 +22,21 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption
 import scala.util.Using
+import scala.util.chaining.scalaUtilChainingOps
 
 /**
  * Program that invokes rule TreeAndSymbolDisplayingRule for one class, using Maven.
  *
  * The program has one argument, containing the path of a Scala source file, relative to the source root directory
- * (typically "src/main/scala").
+ * (typically "src/main/scala", but changeable by system property "sourceDirectory"). It's best to avoid paths
+ * containing spaces in order for this program to work (otherwise using a link to the file might help).
  *
  * The program depends on the existence of a POM file (say, pom-semanticdb.xml) which contains a Maven profile
  * "semanticdb", for Scala compilation emitting semanticdb files, and for running the rule.
+ *
+ * It might be handy to run this program from IntelliJ, setting the working directory to the root directory of the Scala
+ * project where the source to inspect resides (as well as the POM file mentioned above). With system property
+ * "mvnCommand" it is easy to change the Maven command to "./mvnw", if needed.
  *
  * @author
  *   Chris de Vreeze
@@ -44,10 +50,15 @@ object ShowTreeAndSymbols {
   private val defaultPomFile = "pom-semanticdb.xml"
   private val pomFile: String = System.getProperty("pomFile", defaultPomFile)
 
+  private val defaultSourceDirectory: Path = Path.of("src/main/scala").ensuring(!_.isAbsolute)
+
+  private val sourceDirectory: Path =
+    System.getProperty("sourceDirectory", defaultSourceDirectory.toString).pipe(p => Path.of(p))
+
   private val defaultMvnCommandTemplate: String = {
     Seq(
       s"""$mvnCommand scalafix:scalafix -Dscalafix.config=CFG""",
-      s"""-Dscalafix.command.line.args="--files=SCALA-SOURCE-RELATIVE-PATH"""",
+      s"""-Dscalafix.command.line.args=--files=SCALA-SOURCE-RELATIVE-PATH""",
       s"""-Psemanticdb -f $pomFile"""
     ).mkString(" ")
   }
@@ -56,7 +67,9 @@ object ShowTreeAndSymbols {
 
   def main(args: Array[String]): Unit = {
     require(args.lengthIs == 1, "Usage: ShowTreeAndSymbols <source-file-relative-path>")
-    val sourceFileName = Path.of(args(0)).ensuring(!_.isAbsolute, s"Expected source file as relative file path")
+    val sourceFileRelativeToSourceDir =
+      Path.of(args(0)).ensuring(!_.isAbsolute, s"Expected source file as relative file path")
+    val sourceFileRelativeToCurrentDir = sourceDirectory.resolve(sourceFileRelativeToSourceDir)
 
     val tempConfigFile: Path = Files.createTempFile(".scalafix-", ".conf")
 
@@ -73,7 +86,7 @@ object ShowTreeAndSymbols {
       mvnCommandTemplateAsStringSeq.map { str =>
         str
           .replace("CFG", tempConfigFile.toString)
-          .replace("SCALA-SOURCE-RELATIVE-PATH", sourceFileName.toString)
+          .replace("SCALA-SOURCE-RELATIVE-PATH", sourceFileRelativeToCurrentDir.toString)
       }
 
     // See https://docs.oracle.com/javase/9/tools/java.htm#JSWOR-GUID-4856361B-8BFD-4964-AE84-121F5F6CF111
