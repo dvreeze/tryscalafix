@@ -68,6 +68,7 @@ final class TreeAndSymbolDisplayer() extends SemanticDocumentAnalyser[Elem] {
         }
 
     // Note that XML is used rather than JSON for the (CDATA) multi-line tree structure
+    // Yet, when using XML as output format, the Symbols should be CDATA text as well
     implicit val parentScope: Scope = Scope.empty
     val newElem: Elem =
       Node.elem(
@@ -81,18 +82,18 @@ final class TreeAndSymbolDisplayer() extends SemanticDocumentAnalyser[Elem] {
               Node.textElem(
                 Node.elemName("symbol"),
                 Map(Node.attrName("treeClassName") -> symInfo.treeSimpleClassName, Node.attrName("pos") -> symInfo.pos),
-                Node.text(symInfo.symbol.toString)
+                Node.cdataText(symInfo.symbol.toString)
               )
             }
           ),
           Node.elem(
             Node.elemName("symbolAncestries"),
-            symbolInfo.distinctBy(_.symbol.toString).map { symInfo =>
+            symbolInfo.distinctBy(_.symbol.toString).filter(_.ancestorSymbolsOrSelf.nonEmpty).map { symInfo =>
               Node.elem(
                 Node.elemName("symbolAncestry"),
                 Map(Node.attrName("symbol") -> symInfo.symbol.toString),
                 symInfo.ancestorSymbolsOrSelf.map { ancestorOrSelf =>
-                  Node.textElem(Node.elemName("ancestorOrSelf"), Node.text(ancestorOrSelf.toString))
+                  Node.textElem(Node.elemName("ancestorOrSelf"), Node.cdataText(ancestorOrSelf.toString))
                 }
               )
             }
