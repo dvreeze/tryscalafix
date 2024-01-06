@@ -40,7 +40,7 @@ then we could do so (roughly) as follows:
 
 .. code-block:: bash
 
-    mvn scalafix:scalafix -Dscalafix.config=.scalafix-TreeAndSymbolDisplayingRule \
+    mvn scalafix:scalafix -Dscalafix.config=.scalafix-TreeAndSymbolDisplayingRule.conf \
       -Dscalafix.command.line.args="--files=src/main/scala/com/test/MyClass.scala" \
       -Psemanticdb -f pom-semanticdb.xml
 
