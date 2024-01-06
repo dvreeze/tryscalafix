@@ -46,8 +46,6 @@ ThisBuild / libraryDependencies += "org.scalameta" %% "scalafmt-dynamic" % "3.7.
 
 ThisBuild / libraryDependencies += "ch.epfl.scala" %% "scalafix-rules" % "0.11.1"
 
-ThisBuild / libraryDependencies += "ch.epfl.scala" % "scalafix-interfaces" % "0.11.1"
-
 ThisBuild / libraryDependencies += "com.geirsson" %% "metaconfig-typesafe-config" % "0.11.1"
 
 ThisBuild / libraryDependencies += "com.github.scopt" %% "scopt" % "4.1.0"
@@ -57,8 +55,6 @@ val circeVersion = "0.14.1"
 ThisBuild / libraryDependencies += "io.circe" %% "circe-core" % circeVersion
 ThisBuild / libraryDependencies += "io.circe" %% "circe-generic" % circeVersion
 ThisBuild / libraryDependencies += "io.circe" %% "circe-parser" % circeVersion
-
-ThisBuild / libraryDependencies += "net.sf.saxon" % "Saxon-HE" % "12.4"
 
 ThisBuild / libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.17" % Test
 
