@@ -17,6 +17,7 @@
 package eu.cdevreeze.tryscalafix.analyser
 
 import eu.cdevreeze.tryscalafix.SemanticDocumentAnalyser
+import eu.cdevreeze.tryscalafix.analyser.TreeAndSymbolDisplayer.SymbolDisplayInfo
 import eu.cdevreeze.tryscalafix.internal.QuerySupport.WithQueryMethods
 import eu.cdevreeze.tryscalafix.internal.SymbolQuerySupport.getParentSymbolsOrSelf
 import eu.cdevreeze.tryscalafix.internal.xmlsupport.Elem
@@ -48,24 +49,25 @@ final class TreeAndSymbolDisplayer() extends SemanticDocumentAnalyser[Elem] {
 
     val trees: Seq[Tree] = doc.tree.findAllDescendantsOrSelf[Tree]()
 
-    val symbolInfo: Seq[String] =
-      trees.flatMap { tree =>
-        val symbol: Symbol = tree.symbol
-        val pos: String =
-          s"[${tree.pos.startLine},${tree.pos.startColumn} .. ${tree.pos.endLine},${tree.pos.endColumn}]"
-        val symInfo = s"Tree ${tree.getClass.getSimpleName} at position $pos has symbol: $symbol"
+    val symbolInfo: Seq[SymbolDisplayInfo] =
+      trees
+        .map { tree =>
+          val symbol: Symbol = tree.symbol
+          val pos: String =
+            s"[${tree.pos.startLine},${tree.pos.startColumn} .. ${tree.pos.endLine},${tree.pos.endColumn}]"
 
-        val parentInfo: Seq[String] = {
-          if (symbol.info.exists(_.signature.isInstanceOf[ClassSignature])) {
-            val parentsOrSelf: Seq[Symbol] = getParentSymbolsOrSelf(symbol)
-            parentsOrSelf.map { sym => s"Super-type (or self): $sym" }
-          } else {
-            Seq.empty
+          val ancestorsOrSelf: Seq[Symbol] = {
+            if (symbol.info.exists(_.signature.isInstanceOf[ClassSignature])) {
+              val parentsOrSelf: Seq[Symbol] = getParentSymbolsOrSelf(symbol)
+              parentsOrSelf
+            } else {
+              Seq.empty
+            }
           }
+          SymbolDisplayInfo(tree.getClass.getSimpleName, pos, symbol, ancestorsOrSelf)
         }
-        parentInfo.prepended(symInfo)
-      }
 
+    // Note that XML is used rather than JSON for the (CDATA) multi-line tree structure
     implicit val parentScope: Scope = Scope.empty
     val newElem: Elem =
       Node.elem(
@@ -75,8 +77,24 @@ final class TreeAndSymbolDisplayer() extends SemanticDocumentAnalyser[Elem] {
           Node.textElem(Node.elemName("treeStructure"), Node.cdataText(treeStructure)),
           Node.elem(
             Node.elemName("symbols"),
-            symbolInfo.map { si =>
-              Node.textElem(Node.elemName("symbol"), Node.cdataText(si))
+            symbolInfo.map { symInfo =>
+              Node.textElem(
+                Node.elemName("symbol"),
+                Map(Node.attrName("treeClassName") -> symInfo.treeSimpleClassName, Node.attrName("pos") -> symInfo.pos),
+                Node.text(symInfo.symbol.toString)
+              )
+            }
+          ),
+          Node.elem(
+            Node.elemName("symbolAncestries"),
+            symbolInfo.distinctBy(_.symbol.toString).map { symInfo =>
+              Node.elem(
+                Node.elemName("symbolAncestry"),
+                Map(Node.attrName("symbol") -> symInfo.symbol.toString),
+                symInfo.ancestorSymbolsOrSelf.map { ancestorOrSelf =>
+                  Node.textElem(Node.elemName("ancestorOrSelf"), Node.text(ancestorOrSelf.toString))
+                }
+              )
             }
           )
         )
@@ -84,5 +102,16 @@ final class TreeAndSymbolDisplayer() extends SemanticDocumentAnalyser[Elem] {
 
     newElem
   }
+
+}
+
+object TreeAndSymbolDisplayer {
+
+  final case class SymbolDisplayInfo(
+      treeSimpleClassName: String,
+      pos: String,
+      symbol: Symbol,
+      ancestorSymbolsOrSelf: Seq[Symbol]
+  )
 
 }
