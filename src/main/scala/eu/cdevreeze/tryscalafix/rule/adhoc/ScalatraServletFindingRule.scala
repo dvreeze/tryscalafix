@@ -123,6 +123,8 @@ final class ScalatraServletFindingRule extends SemanticRule("ScalatraServletFind
     val httpFunctionCalls: Seq[HttpFunctionCall] = topmostFoundFunctionCalls.map { term =>
       val nestedCallsOrSelf: Seq[Term.Apply] = term.filterDescendantsOrSelf[Term.Apply](_.symbol == term.symbol)
 
+      // Below, we could have used quasiquotes instead.
+      // For quasiquotes, see https://scalameta.org/docs/trees/quasiquotes.html
       val uriPathOption: Option[String] = nestedCallsOrSelf.collectFirst {
         case Term.Apply.After_4_6_0(
               Term.Name(_),
