@@ -104,9 +104,11 @@ final class ScalatraServletFindingRule extends SemanticRule("ScalatraServletFind
       val servletDataSeq: Seq[ScalatraServletData] =
         servletClassDefns.map { classDefn => collectScalatraServletData(classDefn, fileName)(doc) }
 
-      val json: Json = servletDataSeq.asJson
+      if (servletDataSeq.nonEmpty) {
+        val json: Json = servletDataSeq.asJson
 
-      jsonOutputs.updateAndGet(_.appended(json))
+        jsonOutputs.updateAndGet(_.appended(json))
+      }
 
       Patch.empty
     }
@@ -129,7 +131,7 @@ final class ScalatraServletFindingRule extends SemanticRule("ScalatraServletFind
           uriPath
       }
 
-      HttpFunctionCall(term, term.symbol, uriPathOption)
+      HttpFunctionCall(term.getClass.getSimpleName, term.symbol, uriPathOption)
     }
 
     ScalatraServletData(fileName.toString, scalatraClassDefn.symbol, httpFunctionCalls)
@@ -139,11 +141,9 @@ final class ScalatraServletFindingRule extends SemanticRule("ScalatraServletFind
 
 object ScalatraServletFindingRule {
 
-  final case class HttpFunctionCall(term: Term.Apply, symbol: Symbol, uriPathOption: Option[String])
+  final case class HttpFunctionCall(termClassName: String, symbol: Symbol, uriPathOption: Option[String])
 
   final case class ScalatraServletData(fileName: String, classSymbol: Symbol, httpFunctionCalls: Seq[HttpFunctionCall])
-
-  private implicit val termEncoder: Encoder[Term.Apply] = Encoder.encodeString.contramap(_.getClass.getSimpleName)
 
   private implicit val symbolEncoder: Encoder[Symbol] = Encoder.encodeString.contramap(_.toString)
 
