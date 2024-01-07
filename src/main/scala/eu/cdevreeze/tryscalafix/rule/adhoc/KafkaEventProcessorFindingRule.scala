@@ -105,8 +105,8 @@ final class KafkaEventProcessorFindingRule(val config: KafkaEventProcessorFinder
         FoundClass(
           fileName = fileName.toString,
           classSymbol = classDefn.symbol,
-          classSignatureSelfType = classDefn.symbol.info
-            .map(info => info.signature.asInstanceOf[ClassSignature].self.toString)
+          signature = classDefn.symbol.info
+            .map(info => info.signature.asInstanceOf[ClassSignature].toString)
             .getOrElse(sys.error(s"Class definition ${classDefn.symbol} not on class path"))
         )
       }
@@ -125,7 +125,7 @@ final class KafkaEventProcessorFindingRule(val config: KafkaEventProcessorFinder
 
 object KafkaEventProcessorFindingRule {
 
-  final case class FoundClass(fileName: String, classSymbol: Symbol, classSignatureSelfType: String)
+  final case class FoundClass(fileName: String, classSymbol: Symbol, signature: String)
 
   implicit val symbolEncoder: Encoder[Symbol] = Encoder.encodeString.contramap(_.toString)
 
