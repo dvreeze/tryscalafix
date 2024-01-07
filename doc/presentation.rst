@@ -72,7 +72,7 @@ the semantical information contained in the "semanticdb" files. That's where Sca
 Scalafix_ is meant to be used for linting and automatic code rewriting, but it also contains the SemanticDB
 data model in its `Scalafix Scala API`_, which makes it useful even beyond linting and automatic code rewriting.
 
-That's what we are using here. Scalafix *rules* have (at least) the following structure:
+That's what we are using here. Scalafix *semantic rules* have (at least) the following structure:
 
 .. code-block:: scala
 
@@ -80,7 +80,7 @@ That's what we are using here. Scalafix *rules* have (at least) the following st
       override def fix(implicit doc: SemanticDocument): Patch = {
         ???
       }
-    ]
+    }
 
 The implicit *SemanticDocument* is also a "symbol table", which helps resolve symbols for (compiled)
 Java/Scala code anywhere on the class path.
@@ -93,7 +93,7 @@ we can get the tree node's *Symbol*, the symbol's *SymbolInformation* and the sy
 
     // tree.symbol is obtained using an implicit SemanticDocument (or any Symtab)
     // tree.symbol.info is an optional SymbolInformation, but it is always non-empty
-    // tree.symbol.info.get.signature is typically a class/method/value signature
+    // tree.symbol.info.get.signature is typically a class/method/value/type signature
 
     tree.symbol.info.get.signature
 
@@ -108,19 +108,155 @@ For any other Java/Scala *Symbol* on the class path, we can also contain *Symbol
 
 See `Scalafix Scala API`_.
 
+But what do SemanticDB *symbols* look like exactly, as strings? For that (in the case of Scala), see
+`Scala symbols`_.
+
 Using Scalafix for querying code bases
 ======================================
 
-TODO:
+Like mentioned above, "querying code bases" is in a way "abusing" the Scalafix library, but this way
+we can query "semantic trees" representing parsed Scala code. Let's say we want to find all Scalatra
+servlets in a Scala code base, and obtain mappings of HTTP methods (handled by the servlet) to URI paths.
+This is certainly useful in terms of helping understand code bases. A template for such a Scalafix "rule"
+could be as follows:
 
-* "abusing" Scalafix
-* example code
-* what it gives us in terms of the mentioned goal
-* bootstrapping
-* practical etc.
+.. code-block:: scala
+
+    class MyRule extends SemanticRule("MyRule") {
+
+      private var results: Seq[Json] = Seq.empty
+
+      override def beforeStart(): Unit = {
+        ???
+      }
+
+      override def afterComplete(): Unit = {
+        // Print results, e.g. to System.out
+        ???
+      }
+
+      override def fix(implicit doc: SemanticDocument): Patch = {
+        // Find Scalatra servlets in doc; if any found, add them to results
+        // ...
+        Patch.empty // no linting or refactoring Patch
+      }
+    }
+
+This template is followed in for example ScalatraServletFindingRule_. Have a closer look at it.
+Output could look like this:
+
+.. code-block:: json
+
+    {
+      "scalatraServlets": [
+        [
+          {
+            "fileName": "OrderServlet.scala",
+            "classSymbol": "com/test/order/OrderServlet#",
+            "httpFunctionCalls": [
+              {
+                "termClassName": "TermApplyImpl",
+                "symbol": "org/scalatra/ScalatraBase#get().",
+                "uriPathOption": "/:orderId"
+              },
+              {
+                "termClassName": "TermApplyImpl",
+                "symbol": "org/scalatra/ScalatraBase#post().",
+                "uriPathOption": "/:orderId"
+              }
+            ]
+          }
+        ]
+      ]
+    }
+
+So the output shows Scalatra servlets, their HTTP-related operations, and the corresponding URI paths.
+This is an example of how Scalafix can help us understand code bases. Besides Scalatra servlets, we
+could search for Kafka consumers (and related event types), Kafka producers (and related event types),
+and much much more. This is exactly what I would like to achieve with these "rules".
+
+Other examples are KafkaEventProcessorFindingRule_ and (more general in scope) ClassSearchingRule_.
+
+But wait, how do we even know how to write those rules and correctly pattern match on the right trees?
+For that we have rule TreeAndSymbolDisplayingRule_. It has been made easier to use (in Maven Scala projects)
+by "bootstrapping" program ShowTreeAndSymbols_, which outputs pretty-printed Scalameta_ trees, symbols (linked
+to those trees and their positions in the source code), among other things. Looking at that output for a
+source document helps us implement "querying rules".
+
+What about inspecting Java code in mixed Scala/Java projects using Scalafix? For those Java classes we
+do have the *Symbol* (can be created from the known String representation), *SymbolInformation* and
+*Signature*. So we can query those data structures, which, like Java reflection, stops at method signatures.
+
+A template for such rules could look like this:
+
+.. code-block:: scala
+
+    class MyJavaRule extends SemanticRule("MyJavaRule") {
+
+      private var result: Json = null
+
+      override def beforeStart(): Unit = {
+        ???
+      }
+
+      override def afterComplete(): Unit = {
+        // Print result, e.g. to System.out
+        ???
+      }
+
+      override def fix(implicit doc: SemanticDocument): Patch = {
+        if (result == null) {
+          // Do some class path scanning for the relevant directory, say, the target/classes directory
+          // Filter on Java symbols, excluding the Scala symbols (if that's what is wanted)
+          // Process those Java symbols, and set the result accordingly
+          ???
+        }
+        // If the result has been filled (after the first "fix" call), this is a no-op
+        Patch.empty // no linting or refactoring Patch
+      }
+    }
+
+But then, how do we "bootstrap" those rules, and set up configuration? For linting and refactoring,
+Scalafix could be fed with just one ".scalafix.conf" file, for all relevant rules.
+
+For our purposes it is handy to have different ".scalafix-XYZ.conf" files, each one mentioning only 1
+rule and containing configuration only pertaining to that single rule.
+
+So how do we get this all to work? The following steps are needed during development:
+
+* Implement the Scalafix_ semantic rule, obviously
+* Mention the rule in "META-INF/services/scalafix.v1.Rule" (which lands in the same JAR as the rule code)
+* Create a "template" configuration file for this rule (landing in the same JAR)
+* Deploy the JAR with the compiled rules and their direct dependencies (locally, or to Maven Central)
+
+Having this "rule(s) JAR file", it can be used on a Scala(/Java) project:
+
+* Make the Scala compiler emit "semanticdb" files (or else semantic Scalafix rules will not work)
+* Create one or more config files for the rule(s) we would like to run
+* Run a rule, taking the appropriate Scalafix config file
+
+In a Maven Scala(/Java) project, the `following XML snippet`_ can help for "semanticdb" compilation as well
+as running rules. It contains Maven profile "semanticdb", which does not interfere with the normal build if
+this Maven profile is not explicitly activated.
+
+To make running a rule in a Maven project more concrete, assume that we have a POM file "pom-semanticdb.xml"
+generated from "pom.xml" using program EnhancePom_, containing the XML snippet just mentioned.
+
+Then running a rule could be done as follows:
+
+.. code-block:: bash
+
+    mvn scalafix:scalafix -Dscalafix.config=.scalafix-ScalatraServletFindingRule.conf \
+      -Psemanticdb -f pom-semanticdb.xml
+
+It's not very hard to automate this (including "semanticdb" compilation), across multiple projects, with
+one hit of a button.
 
 Conclusion
 ==========
+
+Previous experiments with Scalafix_ for querying code bases worked with "standalone rules" that were not
+very practical (in that they had to be single-source, without any dependencies outside Scalafix etc.).
 
 This time I can really claim that it's practical to use Scalafix_ to write "rules" that query Scala/Java code
 bases to help us understand them more quickly. Moreover, any documentation generated from such Scalafix_
@@ -135,4 +271,11 @@ rules can easily be kept up-to-date.
 .. _sbt: https://www.scala-sbt.org/
 .. _Maven: https://maven.apache.org/
 .. _`Scalafix Scala API`: https://scalacenter.github.io/scalafix/docs/developers/api.html
-
+.. _`Scala symbols`: https://scalameta.org/docs/semanticdb/specification.html#symbol-1
+.. _ScalatraServletFindingRule: https://github.com/dvreeze/tryscalafix/blob/master/src/main/scala/eu/cdevreeze/tryscalafix/rule/adhoc/ScalatraServletFindingRule.scala
+.. _KafkaEventProcessorFindingRule: https://github.com/dvreeze/tryscalafix/blob/master/src/main/scala/eu/cdevreeze/tryscalafix/rule/adhoc/KafkaEventProcessorFindingRule.scala
+.. _ClassSearchingRule: https://github.com/dvreeze/tryscalafix/blob/master/src/main/scala/eu/cdevreeze/tryscalafix/rule/ClassSearchingRule.scala
+.. _TreeAndSymbolDisplayingRule: https://github.com/dvreeze/tryscalafix/blob/master/src/main/scala/eu/cdevreeze/tryscalafix/rule/TreeAndSymbolDisplayingRule.scala
+.. _ShowTreeAndSymbols: https://github.com/dvreeze/tryscalafix/blob/master/src/main/scala/eu/cdevreeze/tryscalafix/console/ShowTreeAndSymbols.scala
+.. _`following XML snippet`: https://github.com/dvreeze/tryscalafix/blob/master/src/main/resources/maven-pom-scalafix-sample.xml
+.. _EnhancePom: https://github.com/dvreeze/tryscalafix/blob/master/src/main/scala/eu/cdevreeze/tryscalafix/console/EnhancePom.scala
