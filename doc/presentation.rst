@@ -179,7 +179,7 @@ Other examples are KafkaEventProcessorFindingRule_ and (more general in scope) C
 
 But wait, how do we even know how to write those rules and correctly pattern match on the right trees?
 For that we have rule TreeAndSymbolDisplayingRule_. It has been made easier to use (in Maven Scala projects)
-by "bootstrapping" program ShowTreeAndSymbols_, which outputs pretty-printed Scalameta_ trees, symbols (linked
+by "bootstrapping" program ShowTreeAndSymbols_, which outputs pretty-printed Scalameta_ trees and symbols (linked
 to those trees and their positions in the source code), among other things. Looking at that output for a
 source document helps us implement "querying rules".
 
@@ -220,7 +220,7 @@ But then, how do we "bootstrap" those rules, and set up configuration? For linti
 Scalafix could be fed with just one ".scalafix.conf" file, for all relevant rules.
 
 For our purposes it is handy to have different ".scalafix-XYZ.conf" files, each one mentioning only 1
-rule and containing configuration only pertaining to that single rule.
+rule and containing configuration only pertaining to that single rule (or even to just one use case of that rule).
 
 So how do we get this all to work? The following steps are needed during development:
 
@@ -231,7 +231,7 @@ So how do we get this all to work? The following steps are needed during develop
 
 Having this "rule(s) JAR file", it can be used on a Scala(/Java) project:
 
-* Make the Scala compiler emit "semanticdb" files (or else semantic Scalafix rules will not work)
+* Have the Scala compiler emit "semanticdb" files (or else semantic Scalafix rules will not work)
 * Create one or more config files for the rule(s) we would like to run
 * Run a rule, taking the appropriate Scalafix config file
 
