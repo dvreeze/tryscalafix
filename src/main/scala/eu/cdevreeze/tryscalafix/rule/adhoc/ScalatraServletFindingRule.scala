@@ -35,6 +35,7 @@ import scalafix.v1.XtensionTreeScalafix
 
 import java.nio.file.Path
 import java.nio.file.Paths
+import java.util.concurrent.atomic.AtomicReference
 import scala.meta.Defn
 import scala.meta.Lit
 import scala.meta.Term
@@ -65,6 +66,26 @@ final class ScalatraServletFindingRule extends SemanticRule("ScalatraServletFind
 
   private val httpFunctionMatcher: SymbolMatcher = httpFunctions.map(s => SymbolMatcher.exact(s.value)).reduce(_ + _)
 
+  private val jsonOutputs: AtomicReference[Seq[Json]] = new AtomicReference()
+
+  override def beforeStart(): Unit = {
+    super.beforeStart()
+
+    this.jsonOutputs.set(Seq.empty)
+  }
+
+  override def afterComplete(): Unit = {
+    val jsonResult: Json = Json.obj(
+      "scalatraServlets" -> jsonOutputs.get.pipe(results => Json.fromValues(results))
+    )
+
+    val jsonString: String = jsonResult.printWith(Printer.spaces2)
+
+    println(jsonString)
+
+    super.afterComplete()
+  }
+
   override def fix(implicit doc: SemanticDocument): Patch = {
     if (httpFunctions.exists(_.info.isEmpty)) {
       Patch.empty
@@ -85,9 +106,7 @@ final class ScalatraServletFindingRule extends SemanticRule("ScalatraServletFind
 
       val json: Json = servletDataSeq.asJson
 
-      val jsonString: String = json.printWith(Printer.spaces2)
-
-      println(jsonString)
+      jsonOutputs.updateAndGet(_.appended(json))
 
       Patch.empty
     }
@@ -105,7 +124,7 @@ final class ScalatraServletFindingRule extends SemanticRule("ScalatraServletFind
       val uriPathOption: Option[String] = nestedCallsOrSelf.collectFirst {
         case Term.Apply.After_4_6_0(
               Term.Name(_),
-              Term.ArgClause(List(Lit.String(uriPath), _), _)
+              Term.ArgClause(List(Lit.String(uriPath), _*), _)
             ) =>
           uriPath
       }
