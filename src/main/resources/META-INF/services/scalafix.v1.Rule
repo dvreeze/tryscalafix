@@ -1,2 +1,3 @@
 eu.cdevreeze.tryscalafix.rule.TreeAndSymbolDisplayingRule
 eu.cdevreeze.tryscalafix.rule.ClassSearchingRule
+eu.cdevreeze.tryscalafix.rule.adhoc.ScalatraServletFindingRule
