@@ -97,7 +97,7 @@ we can get the tree node's *Symbol*, the symbol's *SymbolInformation* and the sy
 
     tree.symbol.info.get.signature
 
-For any other Java/Scala *Symbol* on the class path, we can also contain *SymbolInformation* and its
+For any other Java/Scala *Symbol* on the class path, we can also obtain *SymbolInformation* and its
 *Signature*:
 
 .. code-block:: scala
@@ -249,14 +249,15 @@ Then running a rule could be done as follows:
     mvn scalafix:scalafix -Dscalafix.config=.scalafix-ScalatraServletFindingRule.conf \
       -Psemanticdb -f pom-semanticdb.xml
 
-It's not very hard to automate this (including "semanticdb" compilation), across multiple projects, with
-one hit of a button.
+It's not very hard to automate this (including "semanticdb" compilation), across multiple projects, by
+a push of a button (like in similar experiments using Java reflection).
 
 Conclusion
 ==========
 
 Previous experiments with Scalafix_ for querying code bases worked with "standalone rules" that were not
 very practical (in that they had to be single-source, without any dependencies outside Scalafix etc.).
+Also, I did not exploit rule lifecycle methods in those attempts.
 
 This time I can really claim that it's practical to use Scalafix_ to write "rules" that query Scala/Java code
 bases to help us understand them more quickly. Moreover, any documentation generated from such Scalafix_
