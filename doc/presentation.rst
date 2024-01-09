@@ -47,7 +47,8 @@ quite accessible to Scala programmers, requiring no knowledge about compiler int
 
 With Scalameta_ we can obtain *syntax trees* parsed from Scala source code. See the `Tree Guide`_ for
 an explanation of Scalameta trees. These syntax trees can be queried for tree nodes that we might be
-interested in.
+interested in. Also see `Tree examples`_ for many useful examples. It might be handy to have that page
+open in a browser tab, and look at it when needed.
 
 Syntax trees are similar to the output of the first phase of the Scala compiler. They show the syntactic
 structure of some source code, but they contain *no semantics* yet. In particular, by themselves these
@@ -269,6 +270,7 @@ rules can easily be kept up-to-date.
 .. _`Scalameta`: https://scalameta.org
 .. _`SemanticDB`: https://scalameta.org/docs/semanticdb/guide.html
 .. _`Tree Guide`: https://scalameta.org/docs/trees/guide.html
+.. _`Tree examples`: https://scalameta.org/docs/trees/examples.html
 .. _sbt: https://www.scala-sbt.org/
 .. _Maven: https://maven.apache.org/
 .. _`Scalafix Scala API`: https://scalacenter.github.io/scalafix/docs/developers/api.html
