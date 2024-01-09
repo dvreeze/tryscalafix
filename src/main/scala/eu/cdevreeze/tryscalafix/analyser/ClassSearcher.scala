@@ -22,7 +22,9 @@ import eu.cdevreeze.tryscalafix.analyser.classfinder.ClassFinder
 import eu.cdevreeze.tryscalafix.analyser.classfinder.ClassFinderConfig
 import eu.cdevreeze.tryscalafix.internal.xmlsupport.Elem
 import eu.cdevreeze.tryscalafix.internal.xmlsupport.Scope
+import scalafix.v1.MethodSignature
 import scalafix.v1.SemanticDocument
+import scalafix.v1.ValueSignature
 import scalafix.v1.XtensionTreeScalafix
 
 import java.nio.file.Path
@@ -83,7 +85,17 @@ final class ClassSearcher(val config: ClassFinderConfig) extends SemanticDocumen
                         case defn: Defn.Class =>
                           val primCtor: Ctor.Primary = defn.ctor
                           Seq(
-                            textElem(elemName("primaryConstructor"), text(primCtor.symbol.info.get.signature.toString))
+                            elem(
+                              name = elemName("primaryConstructor"),
+                              children = primCtor.symbol.info.get.signature
+                                .asInstanceOf[MethodSignature]
+                                .parameterLists
+                                .flatten
+                                .map(_.signature.asInstanceOf[ValueSignature])
+                                .map { parSignature =>
+                                  textElem(elemName("par"), text(parSignature.toString))
+                                }
+                            )
                           )
                         case _ =>
                           Seq.empty

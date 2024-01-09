@@ -22,6 +22,7 @@ import eu.cdevreeze.tryscalafix.internal.xmlsupport.Elem
 import eu.cdevreeze.tryscalafix.internal.xmlsupport.Node
 import eu.cdevreeze.tryscalafix.internal.xmlsupport.Scope
 import eu.cdevreeze.tryscalafix.rule.ClassSearchingRule.ClassDefinition
+import eu.cdevreeze.tryscalafix.rule.ClassSearchingRule.PrimaryConstructor
 import eu.cdevreeze.tryscalafix.rule.ClassSearchingRule.SearchResult
 import io.circe.Encoder
 import io.circe.Json
@@ -34,6 +35,7 @@ import scalafix.v1._
 
 import java.util.concurrent.atomic.AtomicReference
 import javax.xml.namespace.QName
+import scala.util.chaining.scalaUtilChainingOps
 
 /**
  * SemanticRule that finds classes by given criteria, by invoking ClassSearcher.
@@ -82,7 +84,13 @@ final class ClassSearchingRule(val config: ClassFinderConfig) extends SemanticRu
         foundClasses = elm.filterDescendantElems(_.name.getLocalPart == "definition").map { defnElm =>
           ClassDefinition(
             classSymbol = Symbol(defnElm.findFirstChildElem(_.name.getLocalPart == "symbol").map(_.text).getOrElse("")),
-            primaryConstructor = defnElm.findFirstChildElem(_.name.getLocalPart == "primaryConstructor").map(_.text)
+            primaryConstructor =
+              defnElm.findFirstChildElem(_.name.getLocalPart == "primaryConstructor").map { ctorElm =>
+                ctorElm
+                  .filterChildElems(_.name.getLocalPart == "par")
+                  .map(_.text)
+                  .pipe(pars => PrimaryConstructor(pars))
+              }
           )
         }
       )
@@ -122,11 +130,15 @@ final class ClassSearchingRule(val config: ClassFinderConfig) extends SemanticRu
 
 object ClassSearchingRule {
 
-  final case class ClassDefinition(classSymbol: Symbol, primaryConstructor: Option[String])
+  final case class PrimaryConstructor(pars: Seq[String])
+
+  final case class ClassDefinition(classSymbol: Symbol, primaryConstructor: Option[PrimaryConstructor])
 
   final case class SearchResult(classCategory: String, foundClasses: Seq[ClassDefinition])
 
   implicit val symbolEncoder: Encoder[Symbol] = Encoder.encodeString.contramap(_.toString)
+
+  implicit val primaryConstructorEncoder: Encoder[PrimaryConstructor] = deriveEncoder
 
   implicit val classDefinitionEncoder: Encoder[ClassDefinition] = deriveEncoder
 
