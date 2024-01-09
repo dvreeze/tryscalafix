@@ -182,7 +182,8 @@ object EventTypeFinderInspectingFirstParameter extends EventTypeFinder {
       parameterLists.nonEmpty && parameterLists.head.nonEmpty,
       s"Expected at least one parameter list, and at least one parameter in first parameter list"
     )
-    val par: SymbolInformation = parameterLists.head.head.pipe(p => p.ensuring(_.isParameter, s"Not a parameter: ${p.symbol}"))
+    val par: SymbolInformation =
+      parameterLists.head.head.pipe(p => p.ensuring(_.isParameter, s"Not a parameter: ${p.symbol}"))
 
     par.signature.pipe {
       case ValueSignature(TypeRef(_, sym, _)) => Set(sym)
@@ -205,14 +206,6 @@ object EventTypeFinderInspectingReturnedPartialFunction extends EventTypeFinder 
       s"Expected no parameter lists, or no parameters in first parameter list"
     )
     require(returnType.isInstanceOf[TypeRef], s"Expected the return type to be a TypeRef")
-
-    val partialFunctionMatcher: SymbolMatcher = SymbolMatcher.exact("scala/PartialFunction#")
-    require(
-      getParentSymbolsOrSelf(returnType.asInstanceOf[TypeRef].symbol).exists { p =>
-        partialFunctionMatcher.matches(p)
-      },
-      s"Expected the return type to be PartialFunction (or a subtype)"
-    )
 
     receiveMethodDefn.body match {
       case Term.PartialFunction(
