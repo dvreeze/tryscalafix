@@ -21,6 +21,7 @@ import eu.cdevreeze.tryscalafix.analyser.classfinder.ClassFinderConfig
 import eu.cdevreeze.tryscalafix.internal.xmlsupport.Elem
 import eu.cdevreeze.tryscalafix.internal.xmlsupport.Node
 import eu.cdevreeze.tryscalafix.internal.xmlsupport.Scope
+import eu.cdevreeze.tryscalafix.rule.ClassSearchingRule.ClassDefinition
 import eu.cdevreeze.tryscalafix.rule.ClassSearchingRule.SearchResult
 import io.circe.Encoder
 import io.circe.Json
@@ -78,7 +79,12 @@ final class ClassSearchingRule(val config: ClassFinderConfig) extends SemanticRu
     val searchResults: Seq[SearchResult] = searchResultElems.map { elm =>
       SearchResult(
         classCategory = elm.findFirstChildElem(_.name.getLocalPart == "classCategory").map(_.text).getOrElse(""),
-        foundClasses = elm.filterDescendantElems(_.name.getLocalPart == "definition").map(_.text)
+        foundClasses = elm.filterDescendantElems(_.name.getLocalPart == "definition").map { defnElm =>
+          ClassDefinition(
+            classSymbol = Symbol(defnElm.findFirstChildElem(_.name.getLocalPart == "symbol").map(_.text).getOrElse("")),
+            primaryConstructor = defnElm.findFirstChildElem(_.name.getLocalPart == "primaryConstructor").map(_.text)
+          )
+        }
       )
     }
 
@@ -116,7 +122,13 @@ final class ClassSearchingRule(val config: ClassFinderConfig) extends SemanticRu
 
 object ClassSearchingRule {
 
-  final case class SearchResult(classCategory: String, foundClasses: Seq[String])
+  final case class ClassDefinition(classSymbol: Symbol, primaryConstructor: Option[String])
+
+  final case class SearchResult(classCategory: String, foundClasses: Seq[ClassDefinition])
+
+  implicit val symbolEncoder: Encoder[Symbol] = Encoder.encodeString.contramap(_.toString)
+
+  implicit val classDefinitionEncoder: Encoder[ClassDefinition] = deriveEncoder
 
   implicit val searchResultEncoder: Encoder[SearchResult] = deriveEncoder
 }

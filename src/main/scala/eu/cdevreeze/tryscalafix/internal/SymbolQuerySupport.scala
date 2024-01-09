@@ -16,6 +16,7 @@
 
 package eu.cdevreeze.tryscalafix.internal
 
+import eu.cdevreeze.tryscalafix.internal.QuerySupport.WithQueryMethods
 import scalafix.v1._
 
 import scala.meta._
@@ -158,6 +159,14 @@ object SymbolQuerySupport {
     getDeclaredMethodsOfClass(classSymbol)
       .map(_.signature)
       .collect { case signature: MethodSignature => signature }
+  }
+
+  def getIntroducingStatementOfLocalSymbol(symbol: Symbol)(implicit doc: SemanticDocument): Stat = {
+    require(symbol.isLocal, s"Not a local symbol")
+    // Term.ParamClause child of Term.Function, Defn.Val etc.
+    doc.tree
+      .findFirstDescendant[Stat] { (stat: Stat) => stat.symbol.value == symbol.value }
+      .getOrElse(sys.error(s"No 'defining' statement found for symbol $symbol"))
   }
 
 }

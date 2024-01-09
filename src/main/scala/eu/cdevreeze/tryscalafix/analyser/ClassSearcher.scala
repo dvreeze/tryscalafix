@@ -27,6 +27,8 @@ import scalafix.v1.XtensionTreeScalafix
 
 import java.nio.file.Path
 import java.nio.file.Paths
+import scala.meta.Ctor
+import scala.meta.Defn
 import scala.meta.inputs.Input
 import scala.util.chaining.scalaUtilChainingOps
 
@@ -62,7 +64,6 @@ final class ClassSearcher(val config: ClassFinderConfig) extends SemanticDocumen
 
     import eu.cdevreeze.tryscalafix.internal.xmlsupport.Node._
 
-    // TODO Enhance/improve
     elem(
       name = elemName("sourceFile"),
       attrs = Map(attrName("fileName") -> fileName.toAbsolutePath.toString),
@@ -74,7 +75,21 @@ final class ClassSearcher(val config: ClassFinderConfig) extends SemanticDocumen
             elem(
               name = elemName("definitions"),
               children = searchResult.definitions.map { defn =>
-                textElem(elemName("definition"), text(defn.symbol.toString))
+                elem(
+                  name = elemName("definition"),
+                  children = Seq(textElem(elemName("symbol"), text(defn.symbol.toString)))
+                    .appendedAll {
+                      defn match {
+                        case defn: Defn.Class =>
+                          val primCtor: Ctor.Primary = defn.ctor
+                          Seq(
+                            textElem(elemName("primaryConstructor"), text(primCtor.symbol.info.get.signature.toString))
+                          )
+                        case _ =>
+                          Seq.empty
+                      }
+                    }
+                )
               }
             )
           )
