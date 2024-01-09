@@ -24,6 +24,7 @@ import eu.cdevreeze.tryscalafix.internal.xmlsupport.Elem
 import eu.cdevreeze.tryscalafix.internal.xmlsupport.Scope
 import scalafix.v1.MethodSignature
 import scalafix.v1.SemanticDocument
+import scalafix.v1.TypeRef
 import scalafix.v1.ValueSignature
 import scalafix.v1.XtensionTreeScalafix
 
@@ -91,9 +92,10 @@ final class ClassSearcher(val config: ClassFinderConfig) extends SemanticDocumen
                                 .asInstanceOf[MethodSignature]
                                 .parameterLists
                                 .flatten
-                                .map(_.signature.asInstanceOf[ValueSignature])
-                                .map { parSignature =>
-                                  textElem(elemName("par"), text(parSignature.toString))
+                                .map(_.signature.asInstanceOf[ValueSignature].tpe)
+                                .collect { case TypeRef(_, sym, _) => sym }
+                                .map { parType =>
+                                  textElem(elemName("par"), text(parType.toString))
                                 }
                             )
                           )
