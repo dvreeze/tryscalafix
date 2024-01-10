@@ -161,12 +161,14 @@ object SymbolQuerySupport {
       .collect { case signature: MethodSignature => signature }
   }
 
-  def getIntroducingStatementOfLocalSymbol(symbol: Symbol)(implicit doc: SemanticDocument): Stat = {
-    require(symbol.isLocal, s"Not a local symbol")
-    // Term.ParamClause child of Term.Function, Defn.Val etc.
-    doc.tree
-      .findFirstDescendant[Stat] { (stat: Stat) => stat.symbol.value == symbol.value }
-      .getOrElse(sys.error(s"No 'defining' statement found for symbol $symbol"))
+  def resolveLocalSymbol(symbol: Symbol)(implicit doc: SemanticDocument): Option[Stat] = {
+    if (symbol.isLocal) {
+      // Term.ParamClause child of Term.Function, Defn.Val etc.
+      doc.tree
+        .findFirstDescendant[Stat] { (stat: Stat) => stat.symbol.value == symbol.value }
+    } else {
+      None
+    }
   }
 
 }
