@@ -123,7 +123,7 @@ final class KafkaProducerFindingRule() extends SemanticRule("KafkaProducerFindin
       if kafkaProducerRecordSymbolMatcher.matches(firstArg.symbol)
       firstArgAsConstructorCall <- firstArg.findFirstDescendantOrSelf[Term.New]((_: Term.New) => true)
       ev <- firstArgAsConstructorCall.init.argClauses.headOption
-        .flatMap(_.values.headOption)
+        .flatMap(_.values.drop(2).headOption)
         .flatMap(t => resolveLocalSymbol(t.symbol).collect { case d: Defn.Val => d.rhs }.orElse(Option(t)))
     } yield ev.symbol
   }
